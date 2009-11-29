@@ -1,15 +1,14 @@
 require 'rubygems'
 require 'sinatra'
-require 'environment'
+
+require 'dm-core'
+require 'dm-validations'
+require 'dm-timestamps'
+
+require 'lib/models/profile'
 
 configure do
-  set :views, "#{File.dirname(__FILE__)}/views"
-end
-
-error do
-  e = request.env['sinatra.error']
-  Kernel.puts e.backtrace.join("\n")
-  'Application error'
+  DataMapper.setup(:default, "sqlite3:///#{File.expand_path(File.dirname(__FILE__))}/#{Sinatra::Base.environment}.db")
 end
 
 helpers do
