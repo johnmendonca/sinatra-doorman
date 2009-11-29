@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'sinatra'
+require 'haml'
 
 require 'dm-core'
 require 'dm-validations'
@@ -15,7 +16,6 @@ helpers do
   # add your helpers here
 end
 
-# root page
 get '/' do
   haml :root
 end
