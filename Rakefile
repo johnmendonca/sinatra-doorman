@@ -1,17 +1,5 @@
-require 'spec/rake/spectask'
-
 task :default => :test
-task :test => :spec
-
-if !defined?(Spec)
-  puts "spec targets require RSpec"
-else
-  desc "Run all examples"
-  Spec::Rake::SpecTask.new('spec') do |t|
-    t.spec_files = FileList['spec/**/*.rb']
-    t.spec_opts = ['-cfs']
-  end
-end
+task :test => [:spec, :cucumber]
 
 namespace :db do
   desc 'Auto-migrate the database (destroys data)'
@@ -25,15 +13,15 @@ namespace :db do
   end
 end
 
-namespace :gems do
-  desc 'Install required gems'
-  task :install do
-    required_gems = %w{ sinatra rspec rack-test dm-core dm-validations
-                        dm-aggregates haml }
-    required_gems.each { |required_gem| system "gem install #{required_gem}" }
-  end
+require 'spec/rake/spectask'
+desc "Run specs"
+Spec::Rake::SpecTask.new do |t|
+  t.spec_files = FileList['spec/**/*.rb']
+  t.spec_opts = ['-cfs']
 end
 
-task :environment do
-  require 'environment'
+require 'cucumber/rake/task'
+desc "Run cucumber features"
+Cucumber::Rake::Task.new do |t|
+  t.cucumber_opts = '--format pretty'
 end

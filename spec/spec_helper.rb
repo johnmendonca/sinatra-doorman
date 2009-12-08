@@ -1,21 +1,16 @@
-require 'rubygems'
-require 'sinatra'
+require File.join(File.dirname(__FILE__), %w{ .. application })
+
 require 'spec'
-require 'spec/interop/test'
+require 'spec/expectations'
 require 'rack/test'
+require 'webrat'
 
-# set test environment
-Sinatra::Base.set :environment, :test
-Sinatra::Base.set :run, false
-Sinatra::Base.set :raise_errors, true
-Sinatra::Base.set :logging, false
-
-require 'application'
-
-# establish in-memory database for testing
 DataMapper.setup(:default, "sqlite3::memory:")
 
+Webrat.configure do |config|
+  config.mode = :rack
+end
+
 Spec::Runner.configure do |config|
-  # reset database before each example is run
   config.before(:each) { DataMapper.auto_migrate! }
 end
