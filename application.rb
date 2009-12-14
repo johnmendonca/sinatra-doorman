@@ -2,11 +2,7 @@ require 'rubygems'
 require 'sinatra'
 require 'haml'
 
-require 'dm-core'
-require 'dm-validations'
-require 'dm-timestamps'
-
-require 'lib/models/user'
+require 'lib/bouncer'
 
 configure :development do
   DataMapper.setup(:default, "sqlite3:///#{File.expand_path(File.dirname(__FILE__))}/development.db")

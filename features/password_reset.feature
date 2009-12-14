@@ -1,3 +1,4 @@
+@wip
 Feature: Password reset
   In order to sign in even if user forgot their password
   A user
