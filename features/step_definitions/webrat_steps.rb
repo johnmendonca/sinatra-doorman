@@ -23,15 +23,14 @@ When /^I click the (.*) button$/ do |label|
 end
 
 Then /^I should be redirected to the (.*) page$/ do |path|
-  #last_response.headers['Location'].should contain("/#{path}")
+  last_request.url.should contain("/#{path}")
 end
 
 Then /^I should see error messages$/ do
-  puts Sinatra::Application.environment
   last_response.should have_selector 'div#flash-error'
 end
 
-Then /^good things happen$/ do
-  pending # express the regexp above with the code you wish you had
+Then /^I should see a success notice$/ do
+  last_response.should have_selector 'div#flash-notice'
 end
 

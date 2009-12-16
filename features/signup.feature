@@ -35,7 +35,8 @@ Feature: Sign up
 			| username | email            | password | password_confirmation   |
 			| dave     | dave@example.com | 5eCuR3z  | 5eCuR3z                 |
 		And I click the signup button
-		Then good things happen
+		Then I should be redirected to the signup page
+		And I should see a success notice
 
 	@wip
     Scenario: User confirms his account
