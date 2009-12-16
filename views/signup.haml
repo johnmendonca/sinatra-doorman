@@ -1,10 +1,12 @@
-%form{:action => "/signup", :id => "signup", :action = "POST"}
-  %label Username
-  %input{:id => "username", :name => "username", :type => "text"}
-  %label Email Address
-  %input{:id => "email", :name => "email", :type => "text"}
-  %label Password
-  %input{:id => "password", :name => "password", :type => "text"}
-  %label Confirm Password
-  %input{:id => "password_confirmation", :name => "password_confirmation", :type => "text"}
+- if flash.has? :error
+  #flash-error= flash[:error]
+%form{:action => "/signup", :id => "signup", :method => "POST"}
+  %label{:for => "user[username]"} Username
+  %input{:id => "user[username]", :name => "user[username]", :type => "text"}
+  %label{:for => "user[email]"} Email Address
+  %input{:id => "user[email]", :name => "user[email]", :type => "text"}
+  %label{:for => "user[password]"} Password
+  %input{:id => "user[password]", :name => "user[password]", :type => "text"}
+  %label{:for => "user[password_confirmation]"} Confirm Password
+  %input{:id => "user[password_confirmation]", :name => "user[password_confirmation]", :type => "text"}
   %input{:id => "signup", :name => "signup", :type => "submit", :value => "Sign up!"}

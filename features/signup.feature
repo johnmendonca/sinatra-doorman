@@ -7,11 +7,12 @@ Feature: Sign up
 			| username | email            |
 			| john     | john@example.com |
 		When I go to the signup page
-		And I fill the form with:
+		And I fill the user form with:
 			| username   | email   | password   | password_confirmation   |
 			| <username> | <email> | <password> | <password_confirmation> |
-		And I click the submit button
-		Then I should see error messages
+		And I click the signup button
+		Then I should be redirected to the signup page
+		And I should see error messages
 
 		Examples:
 			| username | email            | password | password_confirmation |
@@ -30,10 +31,10 @@ Feature: Sign up
 			| username | email            |
 			| john     | john@example.com |
 		When I go to the signup page
-		And I fill the form with:
+		And I fill the user form with:
 			| username | email            | password | password_confirmation   |
 			| dave     | dave@example.com | 5eCuR3z  | 5eCuR3z                 |
-		And I click the submit button
+		And I click the signup button
 		Then good things happen
 
 	@wip

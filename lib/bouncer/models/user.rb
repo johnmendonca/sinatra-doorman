@@ -18,7 +18,7 @@ module Sinatra
 
       attr_accessor :password, :password_confirmation
       validates_length :password, :password_confirmation, :min => 4, :if => :new?
-      validates_is_confirmed :password, :password_confirmation
+      validates_is_confirmed :password
       
       before :create do
         generate_password_hash
@@ -37,7 +37,6 @@ module Sinatra
       def confirm_email!
         self.confirmed    = true
         self.confirm_token = nil
-        save(false)
       end
 
       def forgot_password!

@@ -2,7 +2,7 @@ require File.join(File.dirname(__FILE__), %w{ .. .. spec spec_helper } )
 
 World do
   def app
-    Sinatra::Application
+    Sinatra::Application.new
   end
 
   include Rack::Test::Methods
