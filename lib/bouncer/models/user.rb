@@ -4,8 +4,8 @@ module Sinatra
       include DataMapper::Resource
 
       property :id,                 Serial
-      property :username,           String, :length => 1..23
-      property :email,              String, :required => true, :format => :email_address
+      property :username,           String, :length => 1..23, :unique => true
+      property :email,              String, :required => true, :format => :email_address, :unique => true
       property :password_hash,      String, :accessor => :protected
       property :salt,               String, :accessor => :protected
 

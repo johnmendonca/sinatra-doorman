@@ -8,6 +8,8 @@ World do
   include Rack::Test::Methods
   include Webrat::Methods
   include Webrat::Matchers
+  include EmailSpec::Helpers
+  include EmailSpec::Matchers
 end
 
 Before do

@@ -10,11 +10,14 @@ module Sinatra
 
       post '/signup' do
         user = User.new(params[:user])
-        unless user.save
+        if user.save
+          flash[:notice] = "hooray"
+          Pony.mail(:to => user.email, :from => "no-reply@example.com", :body => "good for you /confirm link")
+          redirect "/"
+        else
           flash[:error] = user.errors.first
           redirect "/signup"
         end
-        redirect "/"
       end
     end
   end

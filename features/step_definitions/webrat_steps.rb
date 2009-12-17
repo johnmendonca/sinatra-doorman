@@ -2,7 +2,7 @@ Given /^that the following users exist$/ do |table|
   table.hashes.each do |params|
     user = Sinatra::Bouncer::User.new(params)
     user.confirm_email!
-    user.save
+    user.save!
   end
 end
 
@@ -22,8 +22,12 @@ When /^I click the (.*) button$/ do |label|
   click_button(label)
 end
 
+Then /^I should be redirected to root$/ do 
+  URI.parse(current_url).path.should == "/"
+end
+
 Then /^I should be redirected to the (.*) page$/ do |path|
-  last_request.url.should contain("/#{path}")
+  URI.parse(current_url).path.should == "/#{path}"
 end
 
 Then /^I should see error messages$/ do

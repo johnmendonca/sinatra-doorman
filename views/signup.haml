@@ -1,5 +1,3 @@
-- if flash.has? :error
-  #flash-error= flash[:error]
 %form{:action => "/signup", :id => "signup", :method => "POST"}
   %label{:for => "user[username]"} Username
   %input{:id => "user[username]", :name => "user[username]", :type => "text"}

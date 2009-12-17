@@ -3,6 +3,7 @@ require 'dm-validations'
 require 'dm-timestamps'
 
 require 'rack/flash'
+require 'pony'
 
 lib = File.expand_path(File.dirname(__FILE__))
 

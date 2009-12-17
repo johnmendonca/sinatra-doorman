@@ -35,8 +35,10 @@ Feature: Sign up
 			| username | email            | password | password_confirmation   |
 			| dave     | dave@example.com | 5eCuR3z  | 5eCuR3z                 |
 		And I click the signup button
-		Then I should be redirected to the signup page
+		Then I should be redirected to root
 		And I should see a success notice
+		And I should receive an email
+		And I should see "/confirm" in the email body
 
 	@wip
     Scenario: User confirms his account

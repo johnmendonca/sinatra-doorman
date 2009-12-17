@@ -9,6 +9,10 @@
         #logo
           %h1
             %a{:href => '/'} Title
+      - if flash.has? :error
+        #flash-error= flash[:error]
+      - if flash.has? :notice
+        #flash-notice= flash[:notice]
       #content= yield
       #footer
         %p#legal= "&mdash; &copy; #{Time.now.strftime('%Y')} &mdash;"
