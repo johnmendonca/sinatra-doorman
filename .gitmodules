@@ -1,0 +1,3 @@
+[submodule "email_spec"]
+	path = email_spec
+	url = git://github.com/johnmendonca/email-spec.git
