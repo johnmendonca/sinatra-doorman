@@ -8,10 +8,10 @@ World do
   include Rack::Test::Methods
   include Webrat::Methods
   include Webrat::Matchers
-  include EmailSpec::Helpers
-  include EmailSpec::Matchers
+  include PonyTest::Helpers
 end
 
 Before do
   DataMapper.auto_migrate!
+  reset_mailer
 end

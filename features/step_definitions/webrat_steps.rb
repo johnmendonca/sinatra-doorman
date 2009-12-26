@@ -34,7 +34,19 @@ Then /^I should see error messages$/ do
   last_response.should have_selector 'div#flash-error'
 end
 
+Then /^I should see an error notice$/ do
+  last_response.should have_selector 'div#flash-error'
+end
+
 Then /^I should see a success notice$/ do
   last_response.should have_selector 'div#flash-notice'
 end
 
+Given /^I signed up with:$/ do |table|
+		When "I go to the signup page"
+		And "I fill the user form with:", table 
+		And "I click the signup button"
+		Then "I should be redirected to root"
+		And "I should see a success notice"
+		And 'I should have an email'
+end

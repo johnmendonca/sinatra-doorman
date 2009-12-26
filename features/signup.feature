@@ -26,7 +26,7 @@ Feature: Sign up
 			| contact  | guy@example.com  | aWeSoMeG | aWeSoMeG              |
 			| guy      | guy@example.com  | aWeSoMeG | radicall              |
 
-	Scenario: User supplies valid, untaken information
+	Scenario: User supplies valid, untaken signup information
 		Given that the following users exist
 			| username | email            |
 			| john     | john@example.com |
@@ -37,34 +37,57 @@ Feature: Sign up
 		And I click the signup button
 		Then I should be redirected to root
 		And I should see a success notice
-		And I should receive an email
+		And I should have an email
 		And I should see "/confirm" in the email body
 
-	@wip
-    Scenario: User confirms his account
-      Given I signed up with "email@person.com/password"
-      When I follow the confirmation link sent to "email@person.com"
-      Then I should see "Confirmed email and signed in"
-      And I should be signed in
+	Scenario: User confirms account
+		Given I signed up with:
+			| username | email            | password | password_confirmation   |
+			| dave     | dave@example.com | 5eCuR3z  | 5eCuR3z                 |
+		When I visit the first link in the email
+		And I fill in the form with:
+			| username 	| password 	|
+			| dave		| 5eCuR3x	|
+		And I click the confirm button
+		Then I should be redirected to "/home"
+		And I should see a success notice
 
-	@wip
+	Scenario: User forgets password before confirming account
+		Given I signed up with:
+			| username | email            | password | password_confirmation   |
+			| dave     | dave@example.com | 5eCuR3z  | 5eCuR3z                 |
+		When I visit the first link in the email
+		And I fill in the form with:
+			| username 	| password 	|
+			| dave		| dunno 	|
+		And I click the confirm button
+		Then I should be redirected to "/confirm"
+		And I should see an error notice
+
     Scenario: Signed in user clicks confirmation link again
-      Given I signed up with "email@person.com/password"
-      When I follow the confirmation link sent to "email@person.com"
-      Then I should be signed in
-      When I follow the confirmation link sent to "email@person.com"
-      Then I should see "Confirmed email and signed in"
-      And I should be signed in
+		Given I signed up and confirmed my account
+		When I visit the first link in the email
+		Then I should be redirected to "/home"
+		And I should see an error notice
 
-	@wip
     Scenario: Signed out user clicks confirmation link again
-      Given I signed up with "email@person.com/password"
-      When I follow the confirmation link sent to "email@person.com"
-      Then I should be signed in
-      When I sign out
-      And I follow the confirmation link sent to "email@person.com"
-      Then I should see "Already confirmed email. Please sign in."
-      And I should be signed out
+		Given I signed up and confirmed my account
+		And I am logged out
+		When I visit the first link in the email
+		Then I should be redirected to "/login"
+		And I should see an error notice
 
-	@wip
 	Scenario: Signed in user tries to signup
+		Given I signed up and confirmed my account
+		When I go to the signup page
+		Then I should be redirected to "/home"
+		And I should see error messages
+
+	Scenario: Signed out user tries to signup again
+		Given I signed up and confirmed my account
+		And I am logged out
+		When I go to the signup page
+		And I fill the user form with my information
+		And I click the signup button
+		Then I should be redirected to "/home"
+		And I should see error messages
