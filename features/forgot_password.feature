@@ -1,8 +1,7 @@
-@wip
-Feature: Password reset
+@forgot
+Feature: Forgot password
   In order to sign in even if user forgot their password
-  A user
-  Should be able to reset it
+  A user should be able to reset it
 
     Scenario: User is not signed up
       Given no user exists with an email of "email@person.com"

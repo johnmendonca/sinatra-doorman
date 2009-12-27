@@ -1,3 +1,4 @@
+@signup
 Feature: Sign up
   In order to use most of the features of the site
   A user should be able to sign up

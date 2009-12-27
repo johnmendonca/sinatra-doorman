@@ -1,36 +1,43 @@
-@wip
-Feature: Sign in
+@login
+Feature: Log in
   In order to get access to protected sections of the site
-  A user
-  Should be able to sign in
+  A user should be able to log in
 
     Scenario: User is not signed up
-      Given no user exists with an email of "email@person.com"
-      When I go to the sign in page
-      And I sign in as "email@person.com/password"
-      Then I should see "Bad email or password"
-      And I should be signed out
+		When I go to the login page
+		And I fill in the form with:
+			| username 	| password 	|
+			| dave		| dunno 	|
+		And I click the submit button
+		Then I should be redirected to "/login"
+		And I should see an error notice
 
-    Scenario: User is not confirmed
-      Given I signed up with "email@person.com/password"
-      When I go to the sign in page
-      And I sign in as "email@person.com/password"
-      Then I should see "User has not confirmed email"
-      And I should be signed out
+	Scenario: User is not confirmed
+		Given I signed up
+		When I go to the login page
+		And I fill in the form with my information
+		And I click the submit button
+		Then I should be redirected to "/login"
+		And I should see an error notice
+		And I should be logged out
 
-   Scenario: User enters wrong password
-      Given I am signed up and confirmed as "email@person.com/password"
-      When I go to the sign in page
-      And I sign in as "email@person.com/wrongpassword"
-      Then I should see "Bad email or password"
-      And I should be signed out
+	Scenario: User enters wrong password
+		Given I signed up and confirmed my account
+		And I am logged out
+		When I go to the login page
+		And I fill in the form with:
+			| username 	| password 	|
+			| dave		| dunno 	|
+		And I click the submit button
+		Then I should be redirected to "/login"
+		And I should see an error notice
+		And I should be logged out
 
-   Scenario: User signs in successfully
-      Given I am signed up and confirmed as "email@person.com/password"
-      When I go to the sign in page
-      And I sign in as "email@person.com/password"
-      Then I should see "Signed in"
-      And I should be signed in
-      When I return next time
-      Then I should be signed in
-
+	Scenario: User signs in successfully
+		Given I signed up and confirmed my account
+		And I am logged out
+		When I go to the login page
+		And I fill in the form with my information
+		And I click the submit button
+		Then I should be redirected to "/home"
+		And I should be logged in
