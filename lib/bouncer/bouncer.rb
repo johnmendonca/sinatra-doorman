@@ -1,6 +1,9 @@
 module Sinatra
   module Bouncer
     module Helpers
+      def confirmation_link(user)
+        "http://localhost:4567/confirm/#{user.confirm_token}"
+      end
     end
 
     def self.registered(app)
@@ -12,7 +15,7 @@ module Sinatra
         user = User.new(params[:user])
         if user.save
           flash[:notice] = "hooray"
-          Pony.mail(:to => user.email, :from => "no-reply@example.com", :body => "good for you /confirm link")
+          Pony.mail(:to => user.email, :from => "no-reply@example.com", :body => confirmation_link(user))
           redirect "/"
         else
           flash[:error] = user.errors.first
