@@ -1,6 +1,3 @@
-#load email_spec submodule for time being
-$: << File.join(File.expand_path(File.dirname(__FILE__)), %w{ .. pony-test lib })
-
 ENV['RACK_ENV'] = 'test'
 
 require File.join(File.dirname(__FILE__), %w{ .. application })
@@ -9,7 +6,7 @@ require 'spec'
 require 'spec/expectations'
 require 'rack/test'
 require 'webrat'
-require 'pony_test'
+require 'pony-test'
 
 DataMapper.setup(:default, "sqlite3::memory:")
 

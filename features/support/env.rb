@@ -8,7 +8,7 @@ World do
   include Rack::Test::Methods
   include Webrat::Methods
   include Webrat::Matchers
-  include PonyTest::Helpers
+  include Pony::TestHelpers
 end
 
 Before do

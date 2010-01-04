@@ -18,6 +18,11 @@ When /^I fill the (.*) form with:$/ do |type, table|
   end
 end
 
+When /^I fill in the form with:$/ do |table|
+  # table is a Cucumber::Ast::Table
+  pending # express the regexp above with the code you wish you had
+end
+
 When /^I click the (.*) button$/ do |label|
   click_button(label)
 end
@@ -28,6 +33,10 @@ end
 
 Then /^I should be redirected to the (.*) page$/ do |path|
   URI.parse(current_url).path.should == "/#{path}"
+end
+
+Then /^I should be redirected to "([^\"]*)"$/ do |path|
+  URI.parse(current_url).path.should == path
 end
 
 Then /^I should see error messages$/ do
@@ -50,3 +59,68 @@ Given /^I signed up with:$/ do |table|
 		And "I should see a success notice"
 		And 'I should have an email'
 end
+
+Given /^I signed up$/ do
+  pending # express the regexp above with the code you wish you had
+end
+
+Given /^I signed up and confirmed my account$/ do
+  pending # express the regexp above with the code you wish you had
+end
+
+Given /^I forgot my password$/ do
+  pending # express the regexp above with the code you wish you had
+end
+
+Given /^I am logged in$/ do
+  pending # express the regexp above with the code you wish you had
+end
+
+Given /^I am logged out$/ do
+  pending # express the regexp above with the code you wish you had
+end
+
+Given /^I am remembered$/ do
+  pending # express the regexp above with the code you wish you had
+end
+
+Given /^I am forgotten$/ do
+  pending # express the regexp above with the code you wish you had
+end
+
+When /^I log out$/ do
+  pending # express the regexp above with the code you wish you had
+end
+
+Then /^I should be logged out$/ do
+  pending # express the regexp above with the code you wish you had
+end
+
+Then /^I should be logged in$/ do
+  pending # express the regexp above with the code you wish you had
+end
+
+Then /^I should be remembered$/ do
+  pending # express the regexp above with the code you wish you had
+end
+
+Then /^I should be forgotten$/ do
+  pending # express the regexp above with the code you wish you had
+end
+
+When /^I check "([^\"]*)"$/ do |arg1|
+  pending # express the regexp above with the code you wish you had
+end
+
+Given /^I have started a new browser session$/ do
+  pending # express the regexp above with the code you wish you had
+end
+
+When /^I fill the user form with my information$/ do
+  pending # express the regexp above with the code you wish you had
+end
+
+When /^I fill in the form with my information$/ do
+  pending # express the regexp above with the code you wish you had
+end
+
