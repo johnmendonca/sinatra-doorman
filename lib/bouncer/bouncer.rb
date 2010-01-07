@@ -2,11 +2,13 @@ module Sinatra
   module Bouncer
     module Helpers
       def confirmation_link(user)
-        "http://localhost:4567/confirm/#{user.confirm_token}"
+        "http://#{env['HTTP_HOST']}/confirm/#{user.confirm_token}"
       end
     end
 
     def self.registered(app)
+      app.helpers Helpers
+
       get '/signup' do
         haml :signup
       end
@@ -15,12 +17,23 @@ module Sinatra
         user = User.new(params[:user])
         if user.save
           flash[:notice] = "hooray"
-          Pony.mail(:to => user.email, :from => "no-reply@example.com", :body => confirmation_link(user))
+          Pony.mail(:to => user.email, :from => "no-reply@#{env['SERVER_NAME']}", :body => confirmation_link(user))
           redirect "/"
         else
           flash[:error] = user.errors.first
           redirect "/signup"
         end
+      end
+
+      get '/confirm/:token' do
+        #ensure actually signed up
+        #give form
+      end
+
+      post '/confirm' do
+        #authenticate user w/ token
+        #confirm user
+        #login user
       end
     end
   end
