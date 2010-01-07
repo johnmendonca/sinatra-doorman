@@ -10,6 +10,10 @@ When /^I go to the (.*) page$/ do |path|
   visit "/#{path}"
 end
 
+When /^I go to "(.*)"$/ do |path|
+  visit path
+end
+
 When /^I fill the (.*) form with:$/ do |type, table|
   table.hashes.each do |hash|
     hash.each_pair do |key, value|
@@ -19,8 +23,11 @@ When /^I fill the (.*) form with:$/ do |type, table|
 end
 
 When /^I fill in the form with:$/ do |table|
-  # table is a Cucumber::Ast::Table
-  pending # express the regexp above with the code you wish you had
+  table.hashes.each do |hash|
+    hash.each_pair do |key, value|
+      fill_in key, :with => value
+    end
+  end
 end
 
 When /^I click the (.*) button$/ do |label|
@@ -52,24 +59,51 @@ Then /^I should see a success notice$/ do
 end
 
 Given /^I signed up with:$/ do |table|
-		When "I go to the signup page"
-		And "I fill the user form with:", table 
-		And "I click the signup button"
-		Then "I should be redirected to root"
-		And "I should see a success notice"
-		And 'I should have an email'
+  When "I go to the signup page"
+  And "I fill the user form with:", table 
+  And "I click the signup button"
+  Then "I should be redirected to root"
+  And "I should see a success notice"
+  And 'I should have an email'
 end
 
 Given /^I signed up$/ do
-  pending # express the regexp above with the code you wish you had
+  When "I go to the signup page"
+  And "I fill the user form with:", table(%{
+    | username | email            | password | password_confirmation   |
+    | dave     | dave@example.com | 5eCuR3z  | 5eCuR3z                 |
+  })
+  And "I click the signup button"
+  Then "I should be redirected to root"
+  And "I should see a success notice"
+  And 'I should have an email'
 end
 
 Given /^I signed up and confirmed my account$/ do
-  pending # express the regexp above with the code you wish you had
+  Given "I signed up"
+  When "I visit the first link in the email"
+  And "I fill in the user form with:", table(%{
+    | username 	| password 	|
+    | dave		| 5eCuR3x	|
+  })
+  And "I click the confirm button"
+  Then 'I should be redirected to "/home"'
+  And "I should see a success notice"
+  And 'I should be logged in'
 end
 
 Given /^I forgot my password$/ do
-  pending # express the regexp above with the code you wish you had
+  Given 'I signed up'
+  When 'I go to the forgot page'
+  And 'I fill in the form with:', table(%{
+    | email 			|
+    | dave@example.com	|
+  })
+  And 'I click the reset button'
+  Then 'I should be redirected to "/login"'
+  And 'I should see a success notice'
+  And 'I should have an email'
+  And 'I should see "/reset" in the email body'
 end
 
 Given /^I am logged in$/ do
@@ -115,12 +149,3 @@ end
 Given /^I have started a new browser session$/ do
   pending # express the regexp above with the code you wish you had
 end
-
-When /^I fill the user form with my information$/ do
-  pending # express the regexp above with the code you wish you had
-end
-
-When /^I fill in the form with my information$/ do
-  pending # express the regexp above with the code you wish you had
-end
-

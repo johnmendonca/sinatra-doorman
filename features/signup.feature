@@ -3,6 +3,10 @@ Feature: Sign up
   In order to use most of the features of the site
   A user should be able to sign up
 
+  User info used by default when ambiguous:
+			| username | email            | password | password_confirmation   |
+			| dave     | dave@example.com | 5eCuR3z  | 5eCuR3z                 |
+
 	Scenario Outline: User inputs invalid signup information
 		Given that the following users exist
 			| username | email            |
@@ -65,13 +69,22 @@ Feature: Sign up
 		Then I should be redirected to "/confirm"
 		And I should see an error notice
 
-    Scenario: Signed in user clicks confirmation link again
+  Scenario: Unregistered user tries to confirm
+    When I go to the confirm page
+    Then I should be redirected to root
+		And I should see an error notice
+
+    When I go to "/confirm/34532faketoken"
+    Then I should be redirected to root
+		And I should see an error notice
+
+  Scenario: Signed in user clicks confirmation link again
 		Given I signed up and confirmed my account
 		When I visit the first link in the email
 		Then I should be redirected to "/home"
 		And I should see an error notice
 
-    Scenario: Signed out user clicks confirmation link again
+  Scenario: Signed out user clicks confirmation link again
 		Given I signed up and confirmed my account
 		And I am logged out
 		When I visit the first link in the email
