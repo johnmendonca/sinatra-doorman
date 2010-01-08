@@ -40,6 +40,12 @@ describe 'A new user object' do
       @user.errors[:username].should_not be_nil
     end
 
+    it 'should invalidate with unallowed characters in the username' do
+      @user.username = "foo@example.com"
+      @user.should_not be_valid
+      @user.errors[:username].should_not be_nil
+    end
+
     it 'should invalidate with lengthy username' do
       @user.username = "joetheplumberisthemanwiththeplumbingplan"
       @user.should_not be_valid

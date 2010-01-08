@@ -111,7 +111,7 @@ Given /^I am logged in$/ do
 end
 
 Given /^I am logged out$/ do
-  pending # express the regexp above with the code you wish you had
+  visit '/logout'
 end
 
 Given /^I am remembered$/ do

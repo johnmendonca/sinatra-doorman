@@ -30,6 +30,7 @@ Feature: Sign up
 			| guy      | john@example.com | aWeSoMeG | aWeSoMeG              |
 			| contact  | guy@example.com  | aWeSoMeG | aWeSoMeG              |
 			| guy      | guy@example.com  | aWeSoMeG | radicall              |
+			| guy@home | guy@example.com  | aWeSoMeG | aWeSoMeG              |
 
 	Scenario: User supplies valid, untaken signup information
 		Given that the following users exist
@@ -57,6 +58,18 @@ Feature: Sign up
 		Then I should be redirected to "/home"
 		And I should see a success notice
 
+	Scenario: User forgets username before confirming account
+		Given I signed up with:
+			| username | email            | password | password_confirmation   |
+			| dave     | dave@example.com | 5eCuR3z  | 5eCuR3z                 |
+		When I visit the first link in the email
+		And I fill in the form with:
+			| username 	| password 	|
+			| someone	| 5eCuR3z |
+		And I click the confirm button
+		Then I should be redirected to "/confirm"
+		And I should see an error notice
+
 	Scenario: User forgets password before confirming account
 		Given I signed up with:
 			| username | email            | password | password_confirmation   |
@@ -69,22 +82,22 @@ Feature: Sign up
 		Then I should be redirected to "/confirm"
 		And I should see an error notice
 
-  Scenario: Unregistered user tries to confirm
-    When I go to the confirm page
-    Then I should be redirected to root
+	Scenario: Unregistered user tries to confirm
+		When I go to the confirm page
+		Then I should be redirected to root
 		And I should see an error notice
 
-    When I go to "/confirm/34532faketoken"
-    Then I should be redirected to root
+		When I go to "/confirm/34532faketoken"
+		Then I should be redirected to root
 		And I should see an error notice
 
-  Scenario: Signed in user clicks confirmation link again
+	Scenario: Signed in user clicks confirmation link again
 		Given I signed up and confirmed my account
 		When I visit the first link in the email
 		Then I should be redirected to "/home"
 		And I should see an error notice
 
-  Scenario: Signed out user clicks confirmation link again
+	Scenario: Signed out user clicks confirmation link again
 		Given I signed up and confirmed my account
 		And I am logged out
 		When I visit the first link in the email
