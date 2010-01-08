@@ -14,7 +14,7 @@ When /^I go to "(.*)"$/ do |path|
   visit path
 end
 
-When /^I fill the (.*) form with:$/ do |type, table|
+When /^I fill in the (.*) form with:$/ do |type, table|
   table.hashes.each do |hash|
     hash.each_pair do |key, value|
       fill_in "#{type}[#{key}]", :with => value
@@ -39,11 +39,11 @@ Then /^I should be redirected to root$/ do
 end
 
 Then /^I should be redirected to the (.*) page$/ do |path|
-  URI.parse(current_url).path.should == "/#{path}"
+  URI.parse(current_url).path.should include("/#{path}")
 end
 
 Then /^I should be redirected to "([^\"]*)"$/ do |path|
-  URI.parse(current_url).path.should == path
+  URI.parse(current_url).path.should include(path)
 end
 
 Then /^I should see error messages$/ do
@@ -60,7 +60,7 @@ end
 
 Given /^I signed up with:$/ do |table|
   When "I go to the signup page"
-  And "I fill the user form with:", table 
+  And "I fill in the user form with:", table 
   And "I click the signup button"
   Then "I should be redirected to root"
   And "I should see a success notice"
@@ -69,7 +69,7 @@ end
 
 Given /^I signed up$/ do
   When "I go to the signup page"
-  And "I fill the user form with:", table(%{
+  And "I fill in the user form with:", table(%{
     | username | email            | password | password_confirmation   |
     | dave     | dave@example.com | 5eCuR3z  | 5eCuR3z                 |
   })
@@ -84,7 +84,7 @@ Given /^I signed up and confirmed my account$/ do
   When "I visit the first link in the email"
   And "I fill in the user form with:", table(%{
     | username 	| password 	|
-    | dave		| 5eCuR3x	|
+    | dave		| 5eCuR3z	|
   })
   And "I click the confirm button"
   Then 'I should be redirected to "/home"'
@@ -127,11 +127,12 @@ When /^I log out$/ do
 end
 
 Then /^I should be logged out$/ do
-  pending # express the regexp above with the code you wish you had
+  last_request.env['warden'].user.should == nil
 end
 
 Then /^I should be logged in$/ do
-  pending # express the regexp above with the code you wish you had
+  last_request.env['warden'].user.username.should == 'dave'
+  last_request.env['warden'].user.email.should == 'dave@example.com'
 end
 
 Then /^I should be remembered$/ do

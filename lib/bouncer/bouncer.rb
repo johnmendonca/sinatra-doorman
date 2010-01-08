@@ -1,18 +1,5 @@
 module Sinatra
   module Bouncer
-    module Helpers
-      def confirmation_link(user)
-        "http://#{env['HTTP_HOST']}/confirm/#{user.confirm_token}"
-      end
-
-      def message(type)
-        case type
-        when :signed_up then "Good job at signing up"
-        when :confirm_token_invalid then "Your confirm token is invalid"
-        end
-      end
-    end
-
     use Rack::Session::Cookie
     use Rack::Flash
     use Warden::Manager do |manager|
@@ -31,17 +18,37 @@ module Sinatra
       end
     end
 
+    module Helpers
+      def logged_in?
+        !env['warden'].user.nil?
+      end
+
+      def confirmation_link(user)
+        "http://#{env['HTTP_HOST']}/confirm/#{user.confirm_token}"
+      end
+
+      def message(type)
+        case type
+        when :signed_up then "Good job at signing up"
+        when :confirm_token_invalid then "Already confirmed or fake token"
+        end
+      end
+    end
+
     def self.registered(app)
       app.helpers Helpers
 
       get '/signup' do
+        redirect '/home' if logged_in?
         haml :signup
       end
 
       post '/signup' do
+        redirect '/home' if logged_in?
+
         user = User.new(params[:user])
         if user.save
-          flash[:notice] = message(:signed_up) + user.confirm_token
+          flash[:notice] = message(:signed_up) + ' ' + user.confirm_token
           Pony.mail(:to => user.email, :from => "no-reply@#{env['SERVER_NAME']}", :body => confirmation_link(user))
           redirect "/"
         else
@@ -51,16 +58,25 @@ module Sinatra
       end
 
       get '/confirm/:token' do
+        redirect '/home' if logged_in?
+
+        if params[:token].nil? || params[:token].empty?
+          flash[:error] = "no token here"
+          redirect '/'
+        end
+
         user = User.first(:confirm_token => params[:token])
         if user.nil?
           flash[:error] = message(:confirm_token_invalid)
-          redirect '/'
+          redirect '/login'
         else
           haml :confirm, :locals => { :confirm_token => user.confirm_token }
         end
       end
 
       post '/confirm' do
+        redirect '/home' if logged_in?
+
         user = User.first(:confirm_token => params[:user][:confirm_token])
         
         if user.nil?
@@ -81,12 +97,16 @@ module Sinatra
         user.confirm_email!
         env['warden'].set_user(user)
         flash[:notice] = 'Confirmed!'
-        redirect '/'
+        redirect '/home'
       end
 
-      get '/private' do
+      get '/login' do
+        haml :login
+      end
+
+      get '/home' do
         env['warden'].authenticate!
-        'Private!'
+        haml :home
       end
 
       get '/logout' do

@@ -12,7 +12,7 @@ Feature: Sign up
 			| username | email            |
 			| john     | john@example.com |
 		When I go to the signup page
-		And I fill the user form with:
+		And I fill in the user form with:
 			| username   | email   | password   | password_confirmation   |
 			| <username> | <email> | <password> | <password_confirmation> |
 		And I click the signup button
@@ -37,7 +37,7 @@ Feature: Sign up
 			| username | email            |
 			| john     | john@example.com |
 		When I go to the signup page
-		And I fill the user form with:
+		And I fill in the user form with:
 			| username | email            | password | password_confirmation   |
 			| dave     | dave@example.com | 5eCuR3z  | 5eCuR3z                 |
 		And I click the signup button
@@ -51,9 +51,9 @@ Feature: Sign up
 			| username | email            | password | password_confirmation   |
 			| dave     | dave@example.com | 5eCuR3z  | 5eCuR3z                 |
 		When I visit the first link in the email
-		And I fill in the form with:
+		And I fill in the user form with:
 			| username 	| password 	|
-			| dave		| 5eCuR3x	|
+			| dave		| 5eCuR3z	|
 		And I click the confirm button
 		Then I should be redirected to "/home"
 		And I should see a success notice
@@ -63,7 +63,7 @@ Feature: Sign up
 			| username | email            | password | password_confirmation   |
 			| dave     | dave@example.com | 5eCuR3z  | 5eCuR3z                 |
 		When I visit the first link in the email
-		And I fill in the form with:
+		And I fill in the user form with:
 			| username 	| password 	|
 			| someone	| 5eCuR3z |
 		And I click the confirm button
@@ -75,7 +75,7 @@ Feature: Sign up
 			| username | email            | password | password_confirmation   |
 			| dave     | dave@example.com | 5eCuR3z  | 5eCuR3z                 |
 		When I visit the first link in the email
-		And I fill in the form with:
+		And I fill in the user form with:
 			| username 	| password 	|
 			| dave		| dunno 	|
 		And I click the confirm button
@@ -84,18 +84,17 @@ Feature: Sign up
 
 	Scenario: Unregistered user tries to confirm
 		When I go to the confirm page
-		Then I should be redirected to root
+		Then I should be redirected to "/"
 		And I should see an error notice
 
 		When I go to "/confirm/34532faketoken"
-		Then I should be redirected to root
+		Then I should be redirected to "/login"
 		And I should see an error notice
 
 	Scenario: Signed in user clicks confirmation link again
 		Given I signed up and confirmed my account
 		When I visit the first link in the email
 		Then I should be redirected to "/home"
-		And I should see an error notice
 
 	Scenario: Signed out user clicks confirmation link again
 		Given I signed up and confirmed my account
@@ -108,13 +107,14 @@ Feature: Sign up
 		Given I signed up and confirmed my account
 		When I go to the signup page
 		Then I should be redirected to "/home"
-		And I should see error messages
 
 	Scenario: Signed out user tries to signup again
 		Given I signed up and confirmed my account
 		And I am logged out
 		When I go to the signup page
-		And I fill the user form with my information
+		And I fill in the user form with:
+			| username | email            | password | password_confirmation   |
+			| dave     | dave@example.com | 5eCuR3z  | 5eCuR3z                 |
 		And I click the signup button
-		Then I should be redirected to "/home"
+		Then I should be redirected to "/signup"
 		And I should see error messages

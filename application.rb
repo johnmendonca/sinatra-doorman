@@ -14,8 +14,9 @@ configure :test do
   set :views, "#{File.dirname(__FILE__)}/views"
 end
 
-helpers do
-  # add your helpers here
+not_found do
+  flash[:error] = "The page you are looking for cannot be found"
+  redirect '/'
 end
 
 get '/' do
