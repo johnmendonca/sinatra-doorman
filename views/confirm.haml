@@ -1,0 +1,7 @@
+%form{:action => "/confirm", :id => "confirm", :method => "POST"}
+  %label{:for => "user[username]"} Username
+  %input{:id => "user[username]", :name => "user[username]", :type => "text"}
+  %label{:for => "user[password]"} Password
+  %input{:id => "user[password]", :name => "user[password]", :type => "text"}
+  %input{:id => "user[confirm_token]", :name => "user[confirm_token]", :type => "hidden", :value => confirm_token}
+  %input{:id => "confirm", :name => "confirm", :type => "submit", :value => "Confirm"}
