@@ -3,7 +3,7 @@ Feature: Log in
   In order to get access to protected sections of the site
   A user should be able to log in
 
-  Scenario: User is not signed up
+	Scenario: User is not signed up
 		When I go to the login page
 		And I fill in the user form with:
 			| login  | password 	|

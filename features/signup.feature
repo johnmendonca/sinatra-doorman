@@ -65,7 +65,7 @@ Feature: Sign up
 
 	Scenario: Signed in user clicks confirmation link again
 		Given I signed up and confirmed my account
-    And I am logged in
+		And I am logged in
 		When I visit the first link in the email
 		Then I should be redirected to "/home"
 
@@ -78,7 +78,7 @@ Feature: Sign up
 
 	Scenario: Signed in user tries to signup
 		Given I signed up and confirmed my account
-    And I am logged in
+		And I am logged in
 		When I go to the signup page
 		Then I should be redirected to "/home"
 
