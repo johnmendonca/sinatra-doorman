@@ -6,17 +6,17 @@ Feature: Forgot password
   Scenario: Outsider claims forgotten password
 		When I go to the forgot page
 		And I fill in the form with:
-			| email 			|
+			| email 			      |
 			| sucka@example.com	|
 		And I click the reset button
 		Then I should be redirected to "/forgot"
 		And I should see an error notice
 
-  Scenario: User forgets
+  Scenario: User forgets password
 		Given I signed up
 		When I go to the forgot page
 		And I fill in the form with:
-			| email 			|
+			| email 			      |
 			| dave@example.com	|
 		And I click the reset button
 		Then I should be redirected to "/login"
@@ -30,9 +30,9 @@ Feature: Forgot password
 		When I visit the first link in the email 
 		And I fill in the form with:
 			| password 	| password_confirmation	|
-			| 5eCuR3x	| securis				|
+			| 5eCuR3z	  | securis				        |
 		And I click the reset button
-		Then I should be redirected to "/login"
+		Then I should be redirected to "/reset"
 		And I should see an error notice
 
   Scenario: Confirmed user forgets and updates password
@@ -42,17 +42,20 @@ Feature: Forgot password
 		When I visit the first link in the email 
 		And I fill in the form with:
 			| password 	| password_confirmation	|
-			| 5eCuR3x	| securis				|
+			| 5eCuR3z	  | 5eCuR3z	              |
 		And I click the reset button
+		Then I should be redirected to "/home"
+		And I should see a success notice
+    And I should be logged in
 
-	@wip
   Scenario: Unconfirmed user forgets and updates password
-    Given I signed up with "email@person.com/password"
-    When I follow the password reset link sent to "email@person.com"
-    And I update my password with "newpassword/newpassword"
-    Then I should be signed in
-    When I sign out
-    Then I should be signed out
-    And I sign in as "email@person.com/newpassword"
-    Then I should be signed in
-
+		Given I signed up
+		And I forgot my password
+		When I visit the first link in the email 
+		And I fill in the form with:
+			| password 	| password_confirmation	|
+			| 5eCuR3z	  | 5eCuR3z	              |
+		And I click the reset button
+		Then I should be redirected to "/home"
+		And I should see a success notice
+    And I should be logged in

@@ -7,6 +7,7 @@ module Sinatra
         env['x-rack.flash'][:error] = "You need to be authenticated to access this page"
         [302, { 'Location' => '/login' }, ['']] 
       }
+      manager.default_strategies :remember_me
       manager.default_serializers :session, :cookie
 
       manager.serializers.update(:session) do
@@ -15,6 +16,16 @@ module Sinatra
         end
 
         def deserialize(id)
+          User.get(id)
+        end
+      end
+
+      manager.serializers.update(:cookie) do
+        def serialize(user)
+          user.id
+        end
+
+        def deserialize(token)
           User.get(id)
         end
       end
@@ -35,12 +46,25 @@ module Sinatra
           end
         end
       end
+
+      manager.strategies.add(:remember_me) do
+        def valid?
+          #if the right cookie is there
+        end
+
+        def authenticate!
+          #look up user by token
+          #nil, fail, clear token
+          #user, success, new token
+        end
+      end
     end
 
     module Helpers
-      def logged_in?
+      def authenticated?
         env['warden'].authenticated?
       end
+      alias_method :logged_in?, :authenticated?
 
       def confirmation_link(user)
         "http://#{env['HTTP_HOST']}/confirm/#{user.confirm_token}"
@@ -58,12 +82,12 @@ module Sinatra
       app.helpers Helpers
 
       get '/signup/?' do
-        redirect '/home' if logged_in?
+        redirect '/home' if authenticated?
         haml :signup
       end
 
       post '/signup' do
-        redirect '/home' if logged_in?
+        redirect '/home' if authenticated?
 
         user = User.new(params[:user])
         if user.save
@@ -77,7 +101,7 @@ module Sinatra
       end
 
       get '/confirm/:token/?' do
-        redirect '/home' if logged_in?
+        redirect '/home' if authenticated?
 
         if params[:token].nil? || params[:token].empty?
           flash[:error] = "no token here"
@@ -87,54 +111,52 @@ module Sinatra
         user = User.first(:confirm_token => params[:token])
         if user.nil?
           flash[:error] = message(:confirm_token_invalid)
-          redirect '/login'
         else
-          haml :confirm, :locals => { :confirm_token => user.confirm_token }
+          user.confirm_email!
+          flash[:notice] = 'Confirmed!'
         end
-      end
-
-      post '/confirm' do
-        redirect '/home' if logged_in?
-
-        user = User.authenticate(params[:user][:username], params[:user][:password])
-        
-        if user.nil?
-          flash[:error] = 'bad credentials'
-          redirect '/confirm/' + params[:user][:confirm_token]
-        end
-
-        unless user.confirm_token == params[:user][:confirm_token]
-          flash[:error] = message(:confirm_token_invalid)
-          redirect '/'
-        end
-
-        user.confirm_email!
-        env['warden'].set_user(user)
-        flash[:notice] = 'Confirmed!'
-        redirect '/home'
+        redirect '/login'
       end
 
       get '/login/?' do
-        redirect '/home' if logged_in?
+        redirect '/home' if authenticated?
         haml :login
       end
 
       post '/login' do
         env['warden'].authenticate(:password)
-        redirect '/home' if logged_in?
+        #remember if checked
+        redirect '/home' if authenticated?
         flash[:error] = 'login fail'
         redirect '/login'
+      end
+
+      get '/logout/?' do
+        env['warden'].logout(:default)
+        #forget me
+        flash[:notice] = "You've managed to logout, great"
+        redirect '/login'
+      end
+
+      get '/forgot/?' do
+        haml :forgot
+      end
+
+      post '/forgot' do
+        redirect '/login'
+      end
+
+      get '/reset/:token/?' do
+        haml :reset
+      end
+
+      post '/reset' do
+        redirect '/'
       end
 
       get '/home/?' do
         env['warden'].authenticate!
         haml :home
-      end
-
-      get '/logout/?' do
-        env['warden'].logout(:default)
-        flash[:notice] = "You've managed to logout, great"
-        redirect '/login'
       end
     end
   end

@@ -51,36 +51,8 @@ Feature: Sign up
 			| username | email            | password | password_confirmation   |
 			| dave     | dave@example.com | 5eCuR3z  | 5eCuR3z                 |
 		When I visit the first link in the email
-		And I fill in the user form with:
-			| username 	| password 	|
-			| dave		| 5eCuR3z	|
-		And I click the confirm button
-		Then I should be redirected to "/home"
+		Then I should be redirected to "/login"
 		And I should see a success notice
-
-	Scenario: User forgets username before confirming account
-		Given I signed up with:
-			| username | email            | password | password_confirmation   |
-			| dave     | dave@example.com | 5eCuR3z  | 5eCuR3z                 |
-		When I visit the first link in the email
-		And I fill in the user form with:
-			| username 	| password 	|
-			| someone	| 5eCuR3z |
-		And I click the confirm button
-		Then I should be redirected to "/confirm"
-		And I should see an error notice
-
-	Scenario: User forgets password before confirming account
-		Given I signed up with:
-			| username | email            | password | password_confirmation   |
-			| dave     | dave@example.com | 5eCuR3z  | 5eCuR3z                 |
-		When I visit the first link in the email
-		And I fill in the user form with:
-			| username 	| password 	|
-			| dave		| dunno 	|
-		And I click the confirm button
-		Then I should be redirected to "/confirm"
-		And I should see an error notice
 
 	Scenario: Unregistered user tries to confirm
 		When I go to the confirm page
@@ -93,6 +65,7 @@ Feature: Sign up
 
 	Scenario: Signed in user clicks confirmation link again
 		Given I signed up and confirmed my account
+    And I am logged in
 		When I visit the first link in the email
 		Then I should be redirected to "/home"
 
@@ -105,6 +78,7 @@ Feature: Sign up
 
 	Scenario: Signed in user tries to signup
 		Given I signed up and confirmed my account
+    And I am logged in
 		When I go to the signup page
 		Then I should be redirected to "/home"
 

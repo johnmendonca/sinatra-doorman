@@ -82,18 +82,11 @@ end
 Given /^I signed up and confirmed my account$/ do
   Given "I signed up"
   When "I visit the first link in the email"
-  And "I fill in the user form with:", table(%{
-    | username 	| password 	|
-    | dave		| 5eCuR3z	|
-  })
-  And "I click the confirm button"
-  Then 'I should be redirected to "/home"'
+  Then 'I should be redirected to "/login"'
   And "I should see a success notice"
-  And 'I should be logged in'
 end
 
 Given /^I forgot my password$/ do
-  Given 'I signed up'
   When 'I go to the forgot page'
   And 'I fill in the form with:', table(%{
     | email 			|
@@ -121,12 +114,17 @@ Given /^I am logged out$/ do
   visit '/logout'
 end
 
-Given /^I am remembered$/ do
-  pending # express the regexp above with the code you wish you had
-end
-
-Given /^I am forgotten$/ do
-  pending # express the regexp above with the code you wish you had
+Given /^I am logged in and remembered$/ do
+  When 'I go to the login page'
+  And 'I fill in the user form with:', table(%{
+    | login   | password 	|
+    | dave    | 5eCuR3z   |
+  })
+  And 'I check "user[remember_me]"'
+  And 'I click the login button'
+  Then 'I should be redirected to "/home"'
+  And 'I should be logged in'
+  And 'I should be remembered'
 end
 
 When /^I log out$/ do
@@ -142,17 +140,17 @@ Then /^I should be logged in$/ do
 end
 
 Then /^I should be remembered$/ do
-  pending # express the regexp above with the code you wish you had
+  last_request.env['warden'].stored?(:default, :cookie).should == true
 end
 
 Then /^I should be forgotten$/ do
-  pending # express the regexp above with the code you wish you had
+  last_request.env['warden'].stored?(:default, :cookie).should == false
 end
 
-When /^I check "([^\"]*)"$/ do |arg1|
-  pending # express the regexp above with the code you wish you had
+When /^I check "([^\"]*)"$/ do |label|
+  check label
 end
 
-Given /^I have started a new browser session$/ do
-  pending # express the regexp above with the code you wish you had
+Given /^I have started a new session$/ do
+  last_request.env['rack.session'].clear
 end
