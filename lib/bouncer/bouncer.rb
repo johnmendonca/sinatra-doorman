@@ -11,23 +11,13 @@ module Sinatra
       manager.default_serializers :session, :cookie
 
       manager.serializers.update(:session) do
-        def serialize(user)
-          user.id
-        end
-
-        def deserialize(id)
-          User.get(id)
-        end
+        def serialize(user); user.id; end
+        def deserialize(id); User.get(id); end
       end
 
       manager.serializers.update(:cookie) do
-        def serialize(user)
-          user.id
-        end
-
-        def deserialize(token)
-          User.get(id)
-        end
+        def serialize(user); user.id; end
+        def deserialize(token); User.get(id); end
       end
 
       manager.strategies.add(:password) do
@@ -139,14 +129,18 @@ module Sinatra
       end
 
       get '/forgot/?' do
+        redirect '/home' if authenticated?
         haml :forgot
       end
 
       post '/forgot' do
+        #look up user
+        #send them email
         redirect '/login'
       end
 
       get '/reset/:token/?' do
+        redirect '/home' if authenticated?
         haml :reset
       end
 

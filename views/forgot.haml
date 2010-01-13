@@ -1,0 +1,4 @@
+%form{:action => "/forgot", :id => "forgot", :method => "POST"}
+  %label{:for => "user[login]"} Username or Email
+  %input{:id => "user[login]", :name => "user[login]", :type => "text"}
+  %input{:id => "forgot", :name => "forgot", :type => "submit", :value => "Send Email"}
