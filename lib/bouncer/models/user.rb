@@ -4,7 +4,7 @@ module Sinatra
       include DataMapper::Resource
 
       property :id,                 Serial
-      property :username,           String, :unique => true, :length => 1..23 
+      property :username,           String, :unique => true, :length => 1..23, :format => /^[a-zA-Z0-9\-_]*$/
       property :email,              String, :unique => true, :required => true, :format => :email_address
       property :password_hash,      String, :accessor => :protected
       property :salt,               String, :accessor => :protected
@@ -27,6 +27,15 @@ module Sinatra
           self.password_hash = encrypt(password)
           self.confirm_token = new_token
         end
+      end
+
+      def self.authenticate(login, password)
+        #if login has @ symbol, treat as email address
+        column = ( login =~ /@/ ? :email : :username )
+        user = User.first(column => login)
+
+        return user if user && user.authenticated?(password)
+        return nil
       end
 
       def authenticated?(password)

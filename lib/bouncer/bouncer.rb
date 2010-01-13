@@ -3,8 +3,10 @@ module Sinatra
     use Rack::Session::Cookie
     use Rack::Flash
     use Warden::Manager do |manager|
-      manager.failure_app = Sinatra::Application
-      manager.default_strategies :password
+      manager.failure_app = lambda { |env|
+        env['x-rack.flash'][:error] = "You need to be authenticated to access this page"
+        [302, { 'Location' => '/login' }, ['']] 
+      }
       manager.default_serializers :session, :cookie
 
       manager.serializers.update(:session) do
@@ -13,14 +15,31 @@ module Sinatra
         end
 
         def deserialize(id)
-          Sinatra::Bouncer::User.get(id)
+          User.get(id)
+        end
+      end
+
+      manager.strategies.add(:password) do
+        def valid?
+          params['user'] && params['user']['login'] && params['user']['password']
+        end
+
+        def authenticate!
+          user = User.authenticate(params['user']['login'], params['user']['password'])
+          if user.nil?
+            errors.add(:authenticate, "invalid login/password")
+          elsif !user.confirmed
+            errors.add(:authenticate, "email not confirmed")
+          else
+            success!(user)
+          end
         end
       end
     end
 
     module Helpers
       def logged_in?
-        !env['warden'].user.nil?
+        env['warden'].authenticated?
       end
 
       def confirmation_link(user)
@@ -38,7 +57,7 @@ module Sinatra
     def self.registered(app)
       app.helpers Helpers
 
-      get '/signup' do
+      get '/signup/?' do
         redirect '/home' if logged_in?
         haml :signup
       end
@@ -57,7 +76,7 @@ module Sinatra
         end
       end
 
-      get '/confirm/:token' do
+      get '/confirm/:token/?' do
         redirect '/home' if logged_in?
 
         if params[:token].nil? || params[:token].empty?
@@ -77,21 +96,16 @@ module Sinatra
       post '/confirm' do
         redirect '/home' if logged_in?
 
-        user = User.first(:confirm_token => params[:user][:confirm_token])
+        user = User.authenticate(params[:user][:username], params[:user][:password])
         
         if user.nil?
+          flash[:error] = 'bad credentials'
+          redirect '/confirm/' + params[:user][:confirm_token]
+        end
+
+        unless user.confirm_token == params[:user][:confirm_token]
           flash[:error] = message(:confirm_token_invalid)
           redirect '/'
-        end
-
-        unless user.username == params[:user][:username]
-          flash[:error] = 'wrong username'
-          redirect '/confirm/' + params[:user][:confirm_token]
-        end
-
-        unless user.authenticated?(params[:user][:password])
-          flash[:error] = 'wrong password'
-          redirect '/confirm/' + params[:user][:confirm_token]
         end
 
         user.confirm_email!
@@ -100,18 +114,27 @@ module Sinatra
         redirect '/home'
       end
 
-      get '/login' do
+      get '/login/?' do
+        redirect '/home' if logged_in?
         haml :login
       end
 
-      get '/home' do
+      post '/login' do
+        env['warden'].authenticate(:password)
+        redirect '/home' if logged_in?
+        flash[:error] = 'login fail'
+        redirect '/login'
+      end
+
+      get '/home/?' do
         env['warden'].authenticate!
         haml :home
       end
 
-      get '/logout' do
-        env['warden'].logout
-        redirect '/'
+      get '/logout/?' do
+        env['warden'].logout(:default)
+        flash[:notice] = "You've managed to logout, great"
+        redirect '/login'
       end
     end
   end

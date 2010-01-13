@@ -107,7 +107,14 @@ Given /^I forgot my password$/ do
 end
 
 Given /^I am logged in$/ do
-  pending # express the regexp above with the code you wish you had
+  unless last_request.env['warden'].authenticated?
+    When 'I go to the login page'
+    And 'I fill in the user form with:', table(%{
+      | login   | password 	|
+      | dave    | 5eCuR3z   |
+    })
+    And 'I click the login button'
+  end
 end
 
 Given /^I am logged out$/ do
@@ -123,16 +130,15 @@ Given /^I am forgotten$/ do
 end
 
 When /^I log out$/ do
-  pending # express the regexp above with the code you wish you had
+  visit '/logout'
 end
 
 Then /^I should be logged out$/ do
-  last_request.env['warden'].user.should == nil
+  last_request.env['warden'].authenticated?.should == false
 end
 
 Then /^I should be logged in$/ do
-  last_request.env['warden'].user.username.should == 'dave'
-  last_request.env['warden'].user.email.should == 'dave@example.com'
+  last_request.env['warden'].authenticated?.should == true
 end
 
 Then /^I should be remembered$/ do

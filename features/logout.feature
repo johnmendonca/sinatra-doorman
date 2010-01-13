@@ -3,7 +3,7 @@ Feature: Log out
   To protect their account from unauthorized access
   A user should be able to log out
 
-    Scenario: User signs out
+	Scenario: User logs out
 		Given I signed up and confirmed my account
 		And I am logged in
 		When I log out

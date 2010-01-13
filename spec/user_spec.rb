@@ -1,5 +1,16 @@
 require "#{File.dirname(__FILE__)}/spec_helper"
 
+#publicize some values for testing
+class Sinatra::Bouncer::User
+  def pub_password_hash
+    @password_hash
+  end
+
+  def pub_salt
+    @salt
+  end
+end
+
 # When object is first created (new?) it needs:
 #   username, email, password, password_confirmation,
 # After it has been saved once (!new?): 
@@ -89,6 +100,11 @@ describe 'A new user object' do
       @user.errors[:password].should_not be_nil
     end
 
+    it 'should not have a salt or password_hash' do
+      @user.pub_salt.should be_nil
+      @user.pub_password_hash.should be_nil
+    end
+
     describe 'saved once' do
       before(:each) do
         @user.save
@@ -109,20 +125,53 @@ describe 'A new user object' do
         @user.password = ""
         @user.should be_valid
       end
-      
-      describe 'then updated and saved twice' do
-        before(:each) do
-          @user.username = "newman"
-          @user.save
-        end
 
-        # I do this twice to make sure the salt hash does not change with each save
-        it 'should authenticate with the originally entered password' do
-          # the password is still in the object from before
-          password = @user.password
-          @user.authenticated?(password).should == true
-        end
+      it 'should have a salt and password_hash' do
+        @user.pub_salt.should_not be_nil
+        @user.pub_salt.length.should > 20
+        @user.pub_password_hash.should_not be_nil
+        @user.pub_password_hash.length.should > 20
+      end
+
+      it 'should have the same salt after subsequent update/saves' do
+        old_salt = @user.pub_salt
+        @user.username = 'newman'
+        @user.save.should == true
+        @user.pub_salt.should == old_salt
+      end
+      
+      it 'should have the same password_hash after subsequent update/saves' do
+        old_hash = @user.pub_password_hash
+        @user.username = 'newman'
+        @user.save.should == true
+        @user.pub_password_hash.should == old_hash
       end
     end
+  end
+end
+
+describe 'User.authenticate' do
+  before(:each) do
+    user = Sinatra::Bouncer::User.new(:username => 'dave', :email => 'dave@example.com', :password => 'password', :password_confirmation => 'password')
+    user.save.should == true
+    user = Sinatra::Bouncer::User.new(:username => 'will', :email => 'will@example.com', :password => 'secret', :password_confirmation => 'secret')
+    user.save.should == true
+  end
+
+  it 'should return a user by username' do
+    user = Sinatra::Bouncer::User.authenticate('dave', 'password')
+    user.should_not be_nil
+    user.email.should == 'dave@example.com'
+  end
+
+  it 'should return a user by email address' do
+    user = Sinatra::Bouncer::User.authenticate('will@example.com', 'secret')
+    user.should_not be_nil
+    user.username.should == 'will'
+  end
+
+  it 'should return nil with wrong password' do
+    user = Sinatra::Bouncer::User.authenticate('will@example.com', 'uhhhh')
+    user.should be_nil
   end
 end
