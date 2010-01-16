@@ -47,6 +47,11 @@ module Sinatra
         save
       end
 
+      def forget_me!
+        self.remember_token = nil
+        save
+      end
+
       def confirm_email!
         self.confirmed    = true
         self.confirm_token = nil

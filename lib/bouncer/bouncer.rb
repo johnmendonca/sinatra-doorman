@@ -1,23 +1,21 @@
 module Sinatra
   module Bouncer
+    COOKIE_KEY = "sinatra.bouncer.remember"
+
     use Rack::Session::Cookie
     use Rack::Flash
+    use Rack::Cookies
     use Warden::Manager do |manager|
       manager.failure_app = lambda { |env|
         env['x-rack.flash'][:error] = "You need to be authenticated to access this page"
         [302, { 'Location' => '/login' }, ['']] 
       }
       manager.default_strategies :remember_me
-      manager.default_serializers :session, :cookie
+      manager.default_serializers :session
 
       manager.serializers.update(:session) do
         def serialize(user); user.id; end
         def deserialize(id); User.get(id); end
-      end
-
-      manager.serializers.update(:cookie) do
-        def serialize(user); user.id; end
-        def deserialize(token); User.get(id); end
       end
 
       manager.strategies.add(:password) do
@@ -32,6 +30,10 @@ module Sinatra
           elsif !user.confirmed
             errors.add(:authenticate, "email not confirmed")
           else
+            if params['user']['remember_me']
+              user.remember_me!
+              env['rack.cookies'][COOKIE_KEY] = { :value => user.remember_token, :expires => Time.now + 7 * 24 * 3600, :path => '/' }
+            end
             success!(user)
           end
         end
@@ -39,15 +41,27 @@ module Sinatra
 
       manager.strategies.add(:remember_me) do
         def valid?
-          #if the right cookie is there
+          !!env['rack.cookies'][COOKIE_KEY]
         end
 
         def authenticate!
-          #look up user by token
-          #nil, fail, clear token
-          #user, success, new token
+          token = env['rack.cookies'][COOKIE_KEY]
+          return nil unless token
+          user = User.first(:remember_token => token)
+          if user.nil?
+            env['rack.cookies'].delete(COOKIE_KEY)
+          else
+            user.remember_me!
+            env['rack.cookies'][COOKIE_KEY] = { :value => user.remember_token, :expires => Time.now + 7 * 24 * 3600, :path => '/' }
+            success!(user)
+          end
         end
       end
+    end
+
+    Warden::Manager.before_logout do |user, proxy, opts|
+      user.forget_me! if user
+      proxy.env['rack.cookies'].delete(COOKIE_KEY)
     end
 
     module Helpers
@@ -58,13 +72,6 @@ module Sinatra
 
       def confirmation_link(user)
         "http://#{env['HTTP_HOST']}/confirm/#{user.confirm_token}"
-      end
-
-      def message(type)
-        case type
-        when :signed_up then "Good job at signing up"
-        when :confirm_token_invalid then "Already confirmed or fake token"
-        end
       end
     end
 
@@ -81,7 +88,7 @@ module Sinatra
 
         user = User.new(params[:user])
         if user.save
-          flash[:notice] = message(:signed_up) + ' ' + user.confirm_token
+          flash[:notice] = "Good job at signing up" + ' ' + user.confirm_token
           Pony.mail(:to => user.email, :from => "no-reply@#{env['SERVER_NAME']}", :body => confirmation_link(user))
           redirect "/"
         else
@@ -100,7 +107,7 @@ module Sinatra
 
         user = User.first(:confirm_token => params[:token])
         if user.nil?
-          flash[:error] = message(:confirm_token_invalid)
+          flash[:error] = "Already confirmed or fake token"
         else
           user.confirm_email!
           flash[:notice] = 'Confirmed!'
@@ -115,7 +122,6 @@ module Sinatra
 
       post '/login' do
         env['warden'].authenticate(:password)
-        #remember if checked
         redirect '/home' if authenticated?
         flash[:error] = 'login fail'
         redirect '/login'
@@ -123,7 +129,6 @@ module Sinatra
 
       get '/logout/?' do
         env['warden'].logout(:default)
-        #forget me
         flash[:notice] = "You've managed to logout, great"
         redirect '/login'
       end

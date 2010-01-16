@@ -140,11 +140,11 @@ Then /^I should be logged in$/ do
 end
 
 Then /^I should be remembered$/ do
-  last_request.env['warden'].stored?(:default, :cookie).should == true
+  last_request.env['rack.cookies'][Sinatra::Bouncer::COOKIE_KEY].should_not be_nil
 end
 
 Then /^I should be forgotten$/ do
-  last_request.env['warden'].stored?(:default, :cookie).should == false
+  last_request.env['rack.cookies'][Sinatra::Bouncer::COOKIE_KEY].should be_nil
 end
 
 When /^I check "([^\"]*)"$/ do |label|
