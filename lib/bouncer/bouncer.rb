@@ -11,12 +11,6 @@ module Sinatra
         [302, { 'Location' => '/login' }, ['']] 
       }
       manager.default_strategies :remember_me
-      manager.default_serializers :session
-
-      manager.serializers.update(:session) do
-        def serialize(user); user.id; end
-        def deserialize(id); User.get(id); end
-      end
 
       manager.strategies.add(:password) do
         def valid?
@@ -57,6 +51,11 @@ module Sinatra
           end
         end
       end
+    end
+
+    class Warden::SessionSerializer
+      def serialize(user); user.id; end
+      def deserialize(id); User.get(id); end
     end
 
     Warden::Manager.before_logout do |user, proxy, opts|
