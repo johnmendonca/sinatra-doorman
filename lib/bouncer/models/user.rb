@@ -12,7 +12,6 @@ module Sinatra
       property :confirmed,          Boolean, :writer => :protected
       property :confirm_token,      String, :writer => :protected
       property :remember_token,     String, :writer => :protected
-      property :reset_token,        String, :writer => :protected
 
       property :created_at,         DateTime
       property :last_login,         DateTime
@@ -59,17 +58,17 @@ module Sinatra
       end
 
       def forgot_password!
-        self.reset_token = new_token
+        self.confirm_token = new_token
         save
       end
 
-      def update_password(new_password, new_password_confirmation)
+      def reset_password!(new_password, new_password_confirmation)
         self.password              = new_password
         self.password_confirmation = new_password_confirmation
         if valid?
-          self.reset_token = nil
+          self.password_hash = encrypt(password)
+          save
         end
-        save
       end
 
       protected

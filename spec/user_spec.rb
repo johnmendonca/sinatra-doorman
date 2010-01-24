@@ -2,21 +2,16 @@ require "#{File.dirname(__FILE__)}/spec_helper"
 
 #publicize some values for testing
 class Sinatra::Bouncer::User
-  def pub_password_hash
-    @password_hash
-  end
-
-  def pub_salt
-    @salt
-  end
+  def pub_password_hash; @password_hash; end
+  def pub_salt; @salt; end
 end
 
-# When object is first created (new?) it needs:
-#   username, email, password, password_confirmation,
-# After it has been saved once (!new?): 
-#   salt, password_hash, confirm_token should have generated
-#   password, password_confirmation are not required anymore
-# Once created, generated values should not change
+# new?:
+#   username, email, password, password_confirmation all required
+# !new?: 
+#   salt, password_hash, confirm_token should have been generated
+#   password, password_confirmation are not required but should match if present
+# 
 describe 'A new user object' do
   before(:each) do
     @user = Sinatra::Bouncer::User.new
@@ -124,6 +119,12 @@ describe 'A new user object' do
       it 'should be valid without a password' do
         @user.password = ""
         @user.should be_valid
+      end
+
+      it 'should be invalid with unmatching passwords' do
+        @user.password = "pastworm"
+        @user.password_confirmation = "dirtworm"
+        @user.should_not be_valid
       end
 
       it 'should have a salt and password_hash' do

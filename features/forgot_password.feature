@@ -54,8 +54,27 @@ Feature: Forgot password
 		When I visit the first link in the email 
 		And I fill in the form with:
 			| password 	| password_confirmation	|
-			| 5eCuR3z	  | 5eCuR3z	              |
+			| 5eCuR3z	| 5eCuR3z	            |
 		And I click the reset button
 		Then I should be redirected to "/home"
 		And I should see a success notice
 		And I should be logged in
+
+	Scenario: User forgets, then remembers and logs in
+		Given I signed up and confirmed my account
+		And I am logged out
+		And I forgot my password
+        # Then I remember somehow
+		When I go to the login page
+		And I fill in the user form with:
+			| login	| password 	|
+			| dave 	| 5eCuR3z   |
+		And I click the login button
+		Then I should be redirected to "/home"
+		And I should be logged in
+
+		# After logging in, reset link should not work
+		When I log out
+		And I visit the first link in the email 
+		Then I should be redirected to "/login"
+		And I should see an error notice
