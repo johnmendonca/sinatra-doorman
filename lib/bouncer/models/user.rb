@@ -28,11 +28,14 @@ module Sinatra
         end
       end
 
-      def self.authenticate(login, password)
+      def self.first_by_login(login)
         #if login has @ symbol, treat as email address
         column = ( login =~ /@/ ? :email : :username )
-        user = User.first(column => login)
+        User.first(column => login)
+      end
 
+      def self.authenticate(login, password)
+        user = User.first_by_login(login)
         return user if user && user.authenticated?(password)
         return nil
       end
@@ -62,13 +65,16 @@ module Sinatra
         save
       end
 
+      def remembered_password!
+        self.confirm_token = nil
+        save
+      end
+
       def reset_password!(new_password, new_password_confirmation)
         self.password              = new_password
         self.password_confirmation = new_password_confirmation
-        if valid?
-          self.password_hash = encrypt(password)
-          save
-        end
+        self.password_hash = encrypt(password) if valid?
+        save
       end
 
       protected

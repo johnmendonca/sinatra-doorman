@@ -23,7 +23,8 @@ module Sinatra
             errors.add(:authenticate, "invalid login/password")
           elsif !user.confirmed
             errors.add(:authenticate, "email not confirmed")
-          else
+          else   #confirmed
+            user.remembered_password!
             if params['user']['remember_me']
               user.remember_me!
               env['rack.cookies'][COOKIE_KEY] = { :value => user.remember_token, :expires => Time.now + 7 * 24 * 3600, :path => '/' }
@@ -71,6 +72,10 @@ module Sinatra
 
       def confirmation_link(user)
         "http://#{env['HTTP_HOST']}/confirm/#{user.confirm_token}"
+      end
+
+      def reset_link(user)
+        "http://#{env['HTTP_HOST']}/reset/#{user.confirm_token}"
       end
     end
 
@@ -138,18 +143,61 @@ module Sinatra
       end
 
       post '/forgot' do
-        #look up user
-        #send them email
+        redirect '/home' if authenticated?
+        redirect '/' unless params['user']
+
+        user = User.first_by_login(params['user']['login'])
+
+        if user.nil?
+          flash[:error] = 'unknown login, try again'
+          redirect '/forgot'
+        end
+
+        user.forgot_password!
+        Pony.mail(:to => user.email, :from => "no-reply@#{env['SERVER_NAME']}", :body => reset_link(user))
+        flash[:notice] = 'A reset password email has been sent to you'
         redirect '/login'
       end
 
       get '/reset/:token/?' do
         redirect '/home' if authenticated?
-        haml :reset
+
+        if params[:token].nil? || params[:token].empty?
+          flash[:error] = "no token here"
+          redirect '/'
+        end
+
+        user = User.first(:confirm_token => params[:token])
+        if user.nil?
+          flash[:error] = "Password reset url no longer valid"
+          redirect '/login'
+        end
+
+        haml :reset, :locals => { :confirm_token => user.confirm_token }
       end
 
       post '/reset' do
-        redirect '/'
+        redirect '/home' if authenticated?
+        redirect '/' unless params['user']
+        
+        user = User.first(:confirm_token => params[:user][:confirm_token])
+        if user.nil?
+          flash[:error] = "Password reset url no longer valid"
+          redirect '/login'
+        end
+
+        success = user.reset_password!(params['user']['password'], 
+                                       params['user']['password_confirmation'])
+
+        unless success
+          flash[:error] = 'Passwords did not match'
+          redirect "/reset/#{user.confirm_token}"
+        end
+
+        user.confirm_email!
+        env['warden'].set_user(user)
+        flash[:notice] = 'teh win'
+        redirect '/home'
       end
 
       get '/home/?' do

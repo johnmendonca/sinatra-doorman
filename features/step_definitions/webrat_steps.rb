@@ -88,14 +88,14 @@ end
 
 Given /^I forgot my password$/ do
   When 'I go to the forgot page'
-  And 'I fill in the form with:', table(%{
-    | email 			|
+  And 'I fill in the user form with:', table(%{
+    | login        			|
     | dave@example.com	|
   })
-  And 'I click the reset button'
+  And 'I click the forgot button'
   Then 'I should be redirected to "/login"'
   And 'I should see a success notice'
-  And 'I should have an email'
+  And 'I should have 2 emails'
   And 'I should see "/reset" in the email body'
 end
 
@@ -108,6 +108,10 @@ Given /^I am logged in$/ do
     })
     And 'I click the login button'
   end
+end
+
+When /^I log in$/ do
+  Given 'I am logged in'
 end
 
 Given /^I am logged out$/ do
