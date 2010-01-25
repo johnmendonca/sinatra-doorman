@@ -2,6 +2,63 @@ module Sinatra
   module Doorman
     COOKIE_KEY = "sinatra.doorman.remember"
 
+    class PasswordStrategy < Warden::Strategies::Base
+      def valid?
+        params['user'] && 
+          params['user']['login'] &&
+          params['user']['password']
+      end
+
+      def authenticate!
+        user = User.authenticate(
+          params['user']['login'], 
+          params['user']['password'])
+
+        if user.nil?
+          env['x-rack.flash'][:error] = "invalid login/password"
+        elsif !user.confirmed
+          env['x-rack.flash'][:error] = "email not confirmed"
+        else  # confirmed
+          user.remembered_password!
+          if params['user']['remember_me']
+            user.remember_me!
+            env['rack.cookies'][COOKIE_KEY] = { 
+              :value => user.remember_token, 
+              :expires => Time.now + 7 * 24 * 3600, 
+              :path => '/' }
+          end
+          success!(user)
+        end
+      end
+    end
+
+    class RememberMeStrategy < Warden::Strategies::Base
+      def valid?
+        !!env['rack.cookies'][COOKIE_KEY]
+      end
+
+      def authenticate!
+        token = env['rack.cookies'][COOKIE_KEY]
+        return unless token
+        user = User.first(:remember_token => token)
+        if user.nil?
+          env['rack.cookies'].delete(COOKIE_KEY)
+        else
+          user.remember_me!  # new token
+          env['rack.cookies'][COOKIE_KEY] = { 
+            :value => user.remember_token, 
+            :expires => Time.now + 7 * 24 * 3600, 
+            :path => '/' }
+          success!(user)
+        end
+      end
+    end
+
+    class Warden::SessionSerializer
+      def serialize(user); user.id; end
+      def deserialize(id); User.get(id); end
+    end
+
     use Rack::Session::Cookie
     use Rack::Flash
     use Rack::Cookies
@@ -10,53 +67,9 @@ module Sinatra
         env['x-rack.flash'][:error] = "You need to be authenticated to access this page"
         [302, { 'Location' => '/login' }, ['']] 
       }
+      manager.strategies.add(:password, PasswordStrategy) 
+      manager.strategies.add(:remember_me, RememberMeStrategy) 
       manager.default_strategies :remember_me
-
-      manager.strategies.add(:password) do
-        def valid?
-          params['user'] && params['user']['login'] && params['user']['password']
-        end
-
-        def authenticate!
-          user = User.authenticate(params['user']['login'], params['user']['password'])
-          if user.nil?
-            errors.add(:authenticate, "invalid login/password")
-          elsif !user.confirmed
-            errors.add(:authenticate, "email not confirmed")
-          else   #confirmed
-            user.remembered_password!
-            if params['user']['remember_me']
-              user.remember_me!
-              env['rack.cookies'][COOKIE_KEY] = { :value => user.remember_token, :expires => Time.now + 7 * 24 * 3600, :path => '/' }
-            end
-            success!(user)
-          end
-        end
-      end
-
-      manager.strategies.add(:remember_me) do
-        def valid?
-          !!env['rack.cookies'][COOKIE_KEY]
-        end
-
-        def authenticate!
-          token = env['rack.cookies'][COOKIE_KEY]
-          return nil unless token
-          user = User.first(:remember_token => token)
-          if user.nil?
-            env['rack.cookies'].delete(COOKIE_KEY)
-          else
-            user.remember_me!
-            env['rack.cookies'][COOKIE_KEY] = { :value => user.remember_token, :expires => Time.now + 7 * 24 * 3600, :path => '/' }
-            success!(user)
-          end
-        end
-      end
-    end
-
-    class Warden::SessionSerializer
-      def serialize(user); user.id; end
-      def deserialize(id); User.get(id); end
     end
 
     Warden::Manager.before_logout do |user, proxy, opts|
@@ -70,12 +83,8 @@ module Sinatra
       end
       alias_method :logged_in?, :authenticated?
 
-      def confirmation_link(user)
-        "http://#{env['HTTP_HOST']}/confirm/#{user.confirm_token}"
-      end
-
-      def reset_link(user)
-        "http://#{env['HTTP_HOST']}/reset/#{user.confirm_token}"
+      def token_link(type, user)
+        "http://#{env['HTTP_HOST']}/#{type}/#{user.confirm_token}"
       end
     end
 
@@ -92,8 +101,11 @@ module Sinatra
 
         user = User.new(params[:user])
         if user.save
-          flash[:notice] = "Good job at signing up" + ' ' + user.confirm_token
-          Pony.mail(:to => user.email, :from => "no-reply@#{env['SERVER_NAME']}", :body => confirmation_link(user))
+          flash[:notice] = 'Signed up: ' + user.confirm_token
+          Pony.mail(
+            :to => user.email, 
+            :from => "no-reply@#{env['SERVER_NAME']}", 
+            :body => token_link('confirm', user))
           redirect "/"
         else
           flash[:error] = user.errors.first
@@ -127,7 +139,6 @@ module Sinatra
       post '/login' do
         env['warden'].authenticate(:password)
         redirect '/home' if authenticated?
-        flash[:error] = 'login fail'
         redirect '/login'
       end
 
@@ -154,7 +165,10 @@ module Sinatra
         end
 
         user.forgot_password!
-        Pony.mail(:to => user.email, :from => "no-reply@#{env['SERVER_NAME']}", :body => reset_link(user))
+        Pony.mail(
+          :to => user.email, 
+          :from => "no-reply@#{env['SERVER_NAME']}", 
+          :body => token_link('reset', user))
         flash[:notice] = 'A reset password email has been sent to you'
         redirect '/login'
       end
@@ -186,8 +200,9 @@ module Sinatra
           redirect '/login'
         end
 
-        success = user.reset_password!(params['user']['password'], 
-                                       params['user']['password_confirmation'])
+        success = user.reset_password!(
+          params['user']['password'], 
+          params['user']['password_confirmation'])
 
         unless success
           flash[:error] = 'Passwords did not match'
