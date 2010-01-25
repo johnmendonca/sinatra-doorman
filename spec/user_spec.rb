@@ -1,7 +1,7 @@
 require "#{File.dirname(__FILE__)}/spec_helper"
 
 #publicize some values for testing
-class Sinatra::Bouncer::User
+class Sinatra::Doorman::User
   def pub_password_hash; @password_hash; end
   def pub_salt; @salt; end
 end
@@ -14,7 +14,7 @@ end
 # 
 describe 'A new user object' do
   before(:each) do
-    @user = Sinatra::Bouncer::User.new
+    @user = Sinatra::Doorman::User.new
   end
 
   it "should be invalid" do
@@ -153,26 +153,26 @@ end
 
 describe 'User.authenticate' do
   before(:each) do
-    user = Sinatra::Bouncer::User.new(:username => 'dave', :email => 'dave@example.com', :password => 'password', :password_confirmation => 'password')
+    user = Sinatra::Doorman::User.new(:username => 'dave', :email => 'dave@example.com', :password => 'password', :password_confirmation => 'password')
     user.save.should == true
-    user = Sinatra::Bouncer::User.new(:username => 'will', :email => 'will@example.com', :password => 'secret', :password_confirmation => 'secret')
+    user = Sinatra::Doorman::User.new(:username => 'will', :email => 'will@example.com', :password => 'secret', :password_confirmation => 'secret')
     user.save.should == true
   end
 
   it 'should return a user by username' do
-    user = Sinatra::Bouncer::User.authenticate('dave', 'password')
+    user = Sinatra::Doorman::User.authenticate('dave', 'password')
     user.should_not be_nil
     user.email.should == 'dave@example.com'
   end
 
   it 'should return a user by email address' do
-    user = Sinatra::Bouncer::User.authenticate('will@example.com', 'secret')
+    user = Sinatra::Doorman::User.authenticate('will@example.com', 'secret')
     user.should_not be_nil
     user.username.should == 'will'
   end
 
   it 'should return nil with wrong password' do
-    user = Sinatra::Bouncer::User.authenticate('will@example.com', 'uhhhh')
+    user = Sinatra::Doorman::User.authenticate('will@example.com', 'uhhhh')
     user.should be_nil
   end
 end

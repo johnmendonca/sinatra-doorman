@@ -3,7 +3,7 @@ require 'sinatra'
 require 'haml'
 require 'warden'
 
-require 'lib/bouncer'
+require 'lib/doorman'
 
 configure :development do
   DataMapper.setup(:default, "sqlite3:///#{File.expand_path(File.dirname(__FILE__))}/development.db")

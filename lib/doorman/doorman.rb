@@ -1,6 +1,6 @@
 module Sinatra
-  module Bouncer
-    COOKIE_KEY = "sinatra.bouncer.remember"
+  module Doorman
+    COOKIE_KEY = "sinatra.doorman.remember"
 
     use Rack::Session::Cookie
     use Rack::Flash
@@ -207,5 +207,5 @@ module Sinatra
     end
   end
 
-  register Bouncer
+  register Doorman
 end

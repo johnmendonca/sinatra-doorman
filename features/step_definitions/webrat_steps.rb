@@ -1,6 +1,6 @@
 Given /^that the following users exist$/ do |table|
   table.hashes.each do |params|
-    user = Sinatra::Bouncer::User.new(params)
+    user = Sinatra::Doorman::User.new(params)
     user.confirm_email!
     user.save!
   end
@@ -144,11 +144,11 @@ Then /^I should be logged in$/ do
 end
 
 Then /^I should be remembered$/ do
-  last_request.env['rack.cookies'][Sinatra::Bouncer::COOKIE_KEY].should_not be_nil
+  last_request.env['rack.cookies'][Sinatra::Doorman::COOKIE_KEY].should_not be_nil
 end
 
 Then /^I should be forgotten$/ do
-  last_request.env['rack.cookies'][Sinatra::Bouncer::COOKIE_KEY].should be_nil
+  last_request.env['rack.cookies'][Sinatra::Doorman::COOKIE_KEY].should be_nil
 end
 
 When /^I check "([^\"]*)"$/ do |label|

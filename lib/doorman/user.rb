@@ -1,5 +1,5 @@
 module Sinatra
-  module Bouncer
+  module Doorman
     class User
       include DataMapper::Resource
 
