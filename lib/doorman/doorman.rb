@@ -15,9 +15,9 @@ module Sinatra
           params['user']['password'])
 
         if user.nil?
-          env['x-rack.flash'][:error] = "invalid login/password"
+          env['x-rack.flash'][:error] = Messages[:login_bad_credentials]
         elsif !user.confirmed
-          env['x-rack.flash'][:error] = "email not confirmed"
+          env['x-rack.flash'][:error] = Messages[:login_not_confirmed]
         else  # confirmed
           user.remembered_password!
           if params['user']['remember_me']
@@ -64,7 +64,7 @@ module Sinatra
     use Rack::Cookies
     use Warden::Manager do |manager|
       manager.failure_app = lambda { |env|
-        env['x-rack.flash'][:error] = "You need to be authenticated to access this page"
+        env['x-rack.flash'][:error] = :authentication_required
         [302, { 'Location' => '/login' }, ['']] 
       }
       manager.strategies.add(:password, PasswordStrategy) 
@@ -101,6 +101,7 @@ module Sinatra
 
         user = User.new(params[:user])
         if user.save
+          flash[:notice] = Messages[:signup_success]
           flash[:notice] = 'Signed up: ' + user.confirm_token
           Pony.mail(
             :to => user.email, 
@@ -117,16 +118,16 @@ module Sinatra
         redirect '/home' if authenticated?
 
         if params[:token].nil? || params[:token].empty?
-          flash[:error] = "no token here"
+          flash[:error] = Messages[:confirm_no_token]
           redirect '/'
         end
 
         user = User.first(:confirm_token => params[:token])
         if user.nil?
-          flash[:error] = "Already confirmed or fake token"
+          flash[:error] = Messages[:confirm_no_user]
         else
           user.confirm_email!
-          flash[:notice] = 'Confirmed!'
+          flash[:notice] = Messages[:confirm_success]
         end
         redirect '/login'
       end
@@ -144,7 +145,7 @@ module Sinatra
 
       get '/logout/?' do
         env['warden'].logout(:default)
-        flash[:notice] = "You've managed to logout, great"
+        flash[:notice] = Messages[:logout_success]
         redirect '/login'
       end
 
@@ -160,7 +161,7 @@ module Sinatra
         user = User.first_by_login(params['user']['login'])
 
         if user.nil?
-          flash[:error] = 'unknown login, try again'
+          flash[:error] = Messages[:forgot_no_user]
           redirect '/forgot'
         end
 
@@ -169,7 +170,7 @@ module Sinatra
           :to => user.email, 
           :from => "no-reply@#{env['SERVER_NAME']}", 
           :body => token_link('reset', user))
-        flash[:notice] = 'A reset password email has been sent to you'
+        flash[:notice] = Messages[:forgot_success]
         redirect '/login'
       end
 
@@ -177,13 +178,13 @@ module Sinatra
         redirect '/home' if authenticated?
 
         if params[:token].nil? || params[:token].empty?
-          flash[:error] = "no token here"
+          flash[:error] = Messages[:reset_no_token]
           redirect '/'
         end
 
         user = User.first(:confirm_token => params[:token])
         if user.nil?
-          flash[:error] = "Password reset url no longer valid"
+          flash[:error] = Messages[:reset_no_user]
           redirect '/login'
         end
 
@@ -196,7 +197,7 @@ module Sinatra
         
         user = User.first(:confirm_token => params[:user][:confirm_token])
         if user.nil?
-          flash[:error] = "Password reset url no longer valid"
+          flash[:error] = Messages[:reset_no_user]
           redirect '/login'
         end
 
@@ -205,13 +206,13 @@ module Sinatra
           params['user']['password_confirmation'])
 
         unless success
-          flash[:error] = 'Passwords did not match'
+          flash[:error] = Messages[:reset_unmatched_passwords]
           redirect "/reset/#{user.confirm_token}"
         end
 
         user.confirm_email!
         env['warden'].set_user(user)
-        flash[:notice] = 'teh win'
+        flash[:notice] = Messages[:reset_success]
         redirect '/home'
       end
 
