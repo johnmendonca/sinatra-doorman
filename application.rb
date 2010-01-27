@@ -34,3 +34,8 @@ end
 get '/' do
   haml :root
 end
+
+get '/home/?' do
+  env['warden'].authenticate!
+  haml :home
+end
