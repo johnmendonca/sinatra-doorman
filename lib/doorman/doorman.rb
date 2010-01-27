@@ -1,7 +1,5 @@
 module Sinatra
   module Doorman
-    COOKIE_KEY = "sinatra.doorman.remember"
-
     class PasswordStrategy < Warden::Strategies::Base
       def valid?
         params['user'] && 
@@ -20,35 +18,6 @@ module Sinatra
           env['x-rack.flash'][:error] = Messages[:login_not_confirmed]
         else  # confirmed
           user.remembered_password!
-          if params['user']['remember_me']
-            user.remember_me!
-            env['rack.cookies'][COOKIE_KEY] = { 
-              :value => user.remember_token, 
-              :expires => Time.now + 7 * 24 * 3600, 
-              :path => '/' }
-          end
-          success!(user)
-        end
-      end
-    end
-
-    class RememberMeStrategy < Warden::Strategies::Base
-      def valid?
-        !!env['rack.cookies'][COOKIE_KEY]
-      end
-
-      def authenticate!
-        token = env['rack.cookies'][COOKIE_KEY]
-        return unless token
-        user = User.first(:remember_token => token)
-        if user.nil?
-          env['rack.cookies'].delete(COOKIE_KEY)
-        else
-          user.remember_me!  # new token
-          env['rack.cookies'][COOKIE_KEY] = { 
-            :value => user.remember_token, 
-            :expires => Time.now + 7 * 24 * 3600, 
-            :path => '/' }
           success!(user)
         end
       end
@@ -57,24 +26,6 @@ module Sinatra
     class Warden::SessionSerializer
       def serialize(user); user.id; end
       def deserialize(id); User.get(id); end
-    end
-
-    use Rack::Session::Cookie
-    use Rack::Flash
-    use Rack::Cookies
-    use Warden::Manager do |manager|
-      manager.failure_app = lambda { |env|
-        env['x-rack.flash'][:error] = :authentication_required
-        [302, { 'Location' => '/login' }, ['']] 
-      }
-      manager.strategies.add(:password, PasswordStrategy) 
-      manager.strategies.add(:remember_me, RememberMeStrategy) 
-      manager.default_strategies :remember_me
-    end
-
-    Warden::Manager.before_logout do |user, proxy, opts|
-      user.forget_me! if user
-      proxy.env['rack.cookies'].delete(COOKIE_KEY)
     end
 
     module Helpers
