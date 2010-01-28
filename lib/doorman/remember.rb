@@ -34,12 +34,5 @@ module Sinatra
       user.forget_me! if user
       auth.env['rack.cookies'].delete(COOKIE_KEY)
     end
-
-    module RememberMe
-      def self.registered(app)
-
-      end
-    end
   end
-  register Doorman::RememberMe
 end

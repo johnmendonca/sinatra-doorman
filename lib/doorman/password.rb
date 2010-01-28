@@ -50,18 +50,19 @@ module Sinatra
         redirect '/home' if authenticated?
 
         user = User.new(params[:user])
-        if user.save
-          flash[:notice] = Messages[:signup_success]
-          flash[:notice] = 'Signed up: ' + user.confirm_token
-          Pony.mail(
-            :to => user.email, 
-            :from => "no-reply@#{env['SERVER_NAME']}", 
-            :body => token_link('confirm', user))
-          redirect "/"
-        else
+        
+        unless user.save
           flash[:error] = user.errors.first
-          redirect "/signup"
+          redirect back
         end
+
+        flash[:notice] = Messages[:signup_success]
+        flash[:notice] = 'Signed up: ' + user.confirm_token
+        Pony.mail(
+          :to => user.email, 
+          :from => "no-reply@#{env['SERVER_NAME']}", 
+          :body => token_link('confirm', user))
+        redirect "/"
       end
 
       get '/confirm/:token/?' do
