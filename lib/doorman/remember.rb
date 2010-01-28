@@ -2,8 +2,6 @@ module Sinatra
   module Doorman
     COOKIE_KEY = "sinatra.doorman.remember"
 
-    use Rack::Cookies
-
     class RememberMeStrategy < Warden::Strategies::Base
       def valid?
         !!env['rack.cookies'][COOKIE_KEY]
@@ -34,5 +32,12 @@ module Sinatra
       user.forget_me! if user
       auth.env['rack.cookies'].delete(COOKIE_KEY)
     end
+
+    module RememberMe
+      def self.registered(app)
+        app.use Rack::Cookies
+      end
+    end
   end
+  register Doorman::RememberMe
 end

@@ -21,15 +21,6 @@ end
 
 use Rack::Session::Cookie
 use Rack::Flash
-use Warden::Manager do |manager|
-  manager.failure_app = lambda { |env|
-    env['x-rack.flash'][:error] = :authentication_required
-    [302, { 'Location' => '/login' }, ['']] 
-  }
-  manager.strategies.add(:password, Sinatra::Doorman::PasswordStrategy) 
-  manager.strategies.add(:remember_me, Sinatra::Doorman::RememberMeStrategy)
-  manager.default_strategies :remember_me
-end
 
 get '/' do
   haml :root

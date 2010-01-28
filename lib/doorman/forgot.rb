@@ -12,12 +12,12 @@ module Sinatra
 
     module ForgotPassword
       def self.registered(app)
-        get '/forgot/?' do
+        app.get '/forgot/?' do
           redirect '/home' if authenticated?
           haml :forgot
         end
 
-        post '/forgot' do
+        app.post '/forgot' do
           redirect '/home' if authenticated?
           redirect '/' unless params['user']
 
@@ -37,7 +37,7 @@ module Sinatra
           redirect '/login'
         end
 
-        get '/reset/:token/?' do
+        app.get '/reset/:token/?' do
           redirect '/home' if authenticated?
 
           if params[:token].nil? || params[:token].empty?
@@ -54,7 +54,7 @@ module Sinatra
           haml :reset, :locals => { :confirm_token => user.confirm_token }
         end
 
-        post '/reset' do
+        app.post '/reset' do
           redirect '/home' if authenticated?
           redirect '/' unless params['user']
           
