@@ -1,17 +1,16 @@
 module Sinatra
   module Doorman
-
-    Warden::Manager.after_authentication do |user, auth, opts|
-      # If the user requested a new password,
-      # but then remembers and logs in,
-      # then invalidate password reset token
-      if auth.winning_strategy.is_a?(PasswordStrategy)
-        user.remembered_password!
-      end
-    end
-
     module ForgotPassword
       def self.registered(app)
+        Warden::Manager.after_authentication do |user, auth, opts|
+          # If the user requested a new password,
+          # but then remembers and logs in,
+          # then invalidate password reset token
+          if auth.winning_strategy.is_a?(Basic::PasswordStrategy)
+            user.remembered_password!
+          end
+        end
+
         app.get '/forgot/?' do
           redirect '/home' if authenticated?
           haml :forgot
@@ -81,5 +80,4 @@ module Sinatra
       end
     end
   end
-  register Doorman::ForgotPassword
 end

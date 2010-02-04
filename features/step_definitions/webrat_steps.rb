@@ -156,5 +156,7 @@ When /^I check "([^\"]*)"$/ do |label|
 end
 
 Given /^I have started a new session$/ do
-  last_request.env['rack.session'].clear
+  remember_cookie = last_request.cookies['sinatra.doorman.remember']
+  clear_cookies
+  set_cookie "sinatra.doorman.remember=#{remember_cookie}"
 end

@@ -1,7 +1,7 @@
 @remember
 Feature: Remember me
-	So that one need not log in on every visit
-	A user should be able to be remembered
+  So that one need not log in on every visit
+  A user should be able to be remembered
 
 	Scenario: User logs in asking to be remembered
 		Given I signed up and confirmed my account
@@ -21,7 +21,7 @@ Feature: Remember me
 		And I am logged in and remembered
 		And I have started a new session
 		When I go to the login page
-		Then I should be redirected to "/home"
+    Then I should be redirected to "/home"
 		And I should be logged in
 		And I should be remembered
 

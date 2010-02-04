@@ -14,4 +14,5 @@ end
 Before do
   DataMapper.auto_migrate!
   reset_mailer
+  clear_cookies
 end

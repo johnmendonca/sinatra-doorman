@@ -22,6 +22,10 @@ end
 use Rack::Session::Cookie
 use Rack::Flash
 
+Sinatra.register Sinatra::Doorman::Basic
+Sinatra.register Sinatra::Doorman::RememberMe
+Sinatra.register Sinatra::Doorman::ForgotPassword
+
 get '/' do
   haml :root
 end

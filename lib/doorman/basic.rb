@@ -1,34 +1,39 @@
 module Sinatra
   module Doorman
 
-    class PasswordStrategy < Warden::Strategies::Base
-      def valid?
-        params['user'] && 
-          params['user']['login'] &&
-          params['user']['password']
-      end
-
-      def authenticate!
-        user = User.authenticate(
-          params['user']['login'], 
-          params['user']['password'])
-
-        if user.nil?
-          env['x-rack.flash'][:error] = Messages[:login_bad_credentials]
-        elsif !user.confirmed
-          env['x-rack.flash'][:error] = Messages[:login_not_confirmed]
-        else  # confirmed
-          success!(user)
-        end
-      end
-    end
-
     class Warden::SessionSerializer
       def serialize(user); user.id; end
       def deserialize(id); User.get(id); end
     end
 
+    #
+    # Basic functionality - includes signup with email confirmation
+    # and login/logout
+    #
+
     module Basic
+      class PasswordStrategy < Warden::Strategies::Base
+        def valid?
+          params['user'] && 
+            params['user']['login'] &&
+            params['user']['password']
+        end
+
+        def authenticate!
+          user = User.authenticate(
+            params['user']['login'], 
+            params['user']['password'])
+
+          if user.nil?
+            env['x-rack.flash'][:error] = Messages[:login_bad_credentials]
+          elsif !user.confirmed
+            env['x-rack.flash'][:error] = Messages[:login_not_confirmed]
+          else  # confirmed
+            success!(user)
+          end
+        end
+      end
+
       module Helpers
         def authenticated?
           env['warden'].authenticated?
@@ -43,17 +48,14 @@ module Sinatra
       def self.registered(app)
         app.helpers Helpers
 
-        #app.use Rack::Session::Cookie
-        #app.use Rack::Flash
         app.use Warden::Manager do |manager|
           manager.failure_app = lambda { |env|
             env['x-rack.flash'][:error] = Messages[:authentication_required]
             [302, { 'Location' => '/login' }, ['']] 
           }
-          manager.strategies.add(:password, PasswordStrategy) 
-          manager.strategies.add(:remember_me, RememberMeStrategy)
-          manager.default_strategies :remember_me
         end
+
+        Warden::Strategies.add(:password, PasswordStrategy) 
 
         app.get '/signup/?' do
           redirect '/home' if authenticated?
@@ -116,5 +118,4 @@ module Sinatra
       end
     end
   end
-  register Doorman::Basic
 end
