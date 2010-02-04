@@ -6,7 +6,7 @@ module Sinatra
           # If the user requested a new password,
           # but then remembers and logs in,
           # then invalidate password reset token
-          if auth.winning_strategy.is_a?(Basic::PasswordStrategy)
+          if auth.winning_strategy.is_a?(Core::PasswordStrategy)
             user.remembered_password!
           end
         end

@@ -7,11 +7,11 @@ module Sinatra
     end
 
     #
-    # Basic functionality - includes signup with email confirmation
+    # Core functionality - includes signup with email confirmation
     # and login/logout
     #
 
-    module Basic
+    module Core
       class PasswordStrategy < Warden::Strategies::Base
         def valid?
           params['user'] && 

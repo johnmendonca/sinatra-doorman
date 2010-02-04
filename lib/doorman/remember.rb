@@ -28,7 +28,7 @@ module Sinatra
 
         Warden::Manager.after_authentication do |user, auth, opts|
           if auth.winning_strategy.is_a?(RememberMeStrategy) ||
-            (auth.winning_strategy.is_a?(Basic::PasswordStrategy) &&
+            (auth.winning_strategy.is_a?(Core::PasswordStrategy) &&
                auth.params['user']['remember_me'])
             user.remember_me!  # new token
             auth.env['rack.cookies'][COOKIE_KEY] = { 

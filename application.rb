@@ -22,7 +22,7 @@ end
 use Rack::Session::Cookie
 use Rack::Flash
 
-Sinatra.register Sinatra::Doorman::Basic
+Sinatra.register Sinatra::Doorman::Core
 Sinatra.register Sinatra::Doorman::RememberMe
 Sinatra.register Sinatra::Doorman::ForgotPassword
 
