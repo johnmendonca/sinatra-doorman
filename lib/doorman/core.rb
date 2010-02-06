@@ -6,39 +6,45 @@ module Sinatra
       def deserialize(id); User.get(id); end
     end
 
-    #
-    # Core functionality - includes signup with email confirmation
-    # and login/logout
-    #
+    ##
+    # Core Features:
+    #   * Signup with Email Confirmation
+    #   * Login/Logout
+    ##
 
-    module Core
-      class PasswordStrategy < Warden::Strategies::Base
-        def valid?
-          params['user'] && 
-            params['user']['login'] &&
-            params['user']['password']
-        end
-
-        def authenticate!
-          user = User.authenticate(
-            params['user']['login'], 
-            params['user']['password'])
-
-          if user.nil?
-            env['x-rack.flash'][:error] = Messages[:login_bad_credentials]
-          elsif !user.confirmed
-            env['x-rack.flash'][:error] = Messages[:login_not_confirmed]
-          else  # confirmed
-            success!(user)
-          end
-        end
+    class PasswordStrategy < Warden::Strategies::Base
+      def valid?
+        params['user'] && 
+          params['user']['login'] &&
+          params['user']['password']
       end
 
+      def authenticate!
+        user = User.authenticate(
+          params['user']['login'], 
+          params['user']['password'])
+
+        if user.nil?
+          fail!(:login_bad_credentials)
+        elsif !user.confirmed
+          fail!(:login_not_confirmed)
+        else
+          success!(user)
+        end
+      end
+    end
+
+    module Core
       module Helpers
         def authenticated?
           env['warden'].authenticated?
         end
         alias_method :logged_in?, :authenticated?
+
+        def notify(type, message)
+          message = Messages[message] if message.is_a?(Symbol)
+          flash[type] = message
+        end
 
         def token_link(type, user)
           "http://#{env['HTTP_HOST']}/#{type}/#{user.confirm_token}"
@@ -68,12 +74,12 @@ module Sinatra
           user = User.new(params[:user])
           
           unless user.save
-            flash[:error] = user.errors.first
+            notify :error, user.errors.first
             redirect back
           end
 
-          flash[:notice] = Messages[:signup_success]
-          flash[:notice] = 'Signed up: ' + user.confirm_token
+          notify :notice, :signup_success
+          notify :notice, 'Signed up: ' + user.confirm_token
           Pony.mail(
             :to => user.email, 
             :from => "no-reply@#{env['SERVER_NAME']}", 
@@ -85,16 +91,16 @@ module Sinatra
           redirect '/home' if authenticated?
 
           if params[:token].nil? || params[:token].empty?
-            flash[:error] = Messages[:confirm_no_token]
+            notify :error, :confirm_no_token
             redirect '/'
           end
 
           user = User.first(:confirm_token => params[:token])
           if user.nil?
-            flash[:error] = Messages[:confirm_no_user]
+            notify :error, :confirm_no_user
           else
             user.confirm_email!
-            flash[:notice] = Messages[:confirm_success]
+            notify :notice, :confirm_success
           end
           redirect '/login'
         end
@@ -107,38 +113,39 @@ module Sinatra
         app.post '/login' do
           env['warden'].authenticate(:password)
           redirect '/home' if authenticated?
-          redirect '/login'
+          notify :error, env['warden'].message
+          redirect back
         end
 
         app.get '/logout/?' do
           env['warden'].logout(:default)
-          flash[:notice] = Messages[:logout_success]
+          notify :notice, :logout_success
           redirect '/login'
         end
       end
     end
 
-    #
-    # Remember Me
-    #
+    ##
+    # Remember Me Feature
+    ##
 
     COOKIE_KEY = "sinatra.doorman.remember"
 
-    module RememberMe
-      class RememberMeStrategy < Warden::Strategies::Base
-        def valid?
-          !!env['rack.cookies'][COOKIE_KEY]
-        end
-
-        def authenticate!
-          token = env['rack.cookies'][COOKIE_KEY]
-          return unless token
-          user = User.first(:remember_token => token)
-          env['rack.cookies'].delete(COOKIE_KEY) and return if user.nil?
-          success!(user)
-        end
+    class RememberMeStrategy < Warden::Strategies::Base
+      def valid?
+        !!env['rack.cookies'][COOKIE_KEY]
       end
 
+      def authenticate!
+        token = env['rack.cookies'][COOKIE_KEY]
+        return unless token
+        user = User.first(:remember_token => token)
+        env['rack.cookies'].delete(COOKIE_KEY) and return if user.nil?
+        success!(user)
+      end
+    end
+
+    module RememberMe
       def self.registered(app)
         app.use Rack::Cookies
 
@@ -150,7 +157,7 @@ module Sinatra
 
         Warden::Manager.after_authentication do |user, auth, opts|
           if auth.winning_strategy.is_a?(RememberMeStrategy) ||
-            (auth.winning_strategy.is_a?(Core::PasswordStrategy) &&
+            (auth.winning_strategy.is_a?(PasswordStrategy) &&
                auth.params['user']['remember_me'])
             user.remember_me!  # new token
             auth.env['rack.cookies'][COOKIE_KEY] = { 
@@ -167,9 +174,9 @@ module Sinatra
       end
     end
 
-    #
-    # Forgot Password
-    #
+    ##
+    # Forgot Password Feature
+    ##
 
     module ForgotPassword
       def self.registered(app)
@@ -177,7 +184,7 @@ module Sinatra
           # If the user requested a new password,
           # but then remembers and logs in,
           # then invalidate password reset token
-          if auth.winning_strategy.is_a?(Core::PasswordStrategy)
+          if auth.winning_strategy.is_a?(PasswordStrategy)
             user.remembered_password!
           end
         end
@@ -194,8 +201,8 @@ module Sinatra
           user = User.first_by_login(params['user']['login'])
 
           if user.nil?
-            flash[:error] = Messages[:forgot_no_user]
-            redirect '/forgot'
+            notify :error, :forgot_no_user
+            redirect back
           end
 
           user.forgot_password!
@@ -203,7 +210,7 @@ module Sinatra
             :to => user.email, 
             :from => "no-reply@#{env['SERVER_NAME']}", 
             :body => token_link('reset', user))
-          flash[:notice] = Messages[:forgot_success]
+          notify :notice, :forgot_success
           redirect '/login'
         end
 
@@ -211,13 +218,13 @@ module Sinatra
           redirect '/home' if authenticated?
 
           if params[:token].nil? || params[:token].empty?
-            flash[:error] = Messages[:reset_no_token]
+            notify :error, :reset_no_token
             redirect '/'
           end
 
           user = User.first(:confirm_token => params[:token])
           if user.nil?
-            flash[:error] = Messages[:reset_no_user]
+            notify :error, :reset_no_user
             redirect '/login'
           end
 
@@ -230,7 +237,7 @@ module Sinatra
           
           user = User.first(:confirm_token => params[:user][:confirm_token])
           if user.nil?
-            flash[:error] = Messages[:reset_no_user]
+            notify :error, :reset_no_user
             redirect '/login'
           end
 
@@ -239,13 +246,13 @@ module Sinatra
             params['user']['password_confirmation'])
 
           unless success
-            flash[:error] = Messages[:reset_unmatched_passwords]
-            redirect "/reset/#{user.confirm_token}"
+            notify :error, :reset_unmatched_passwords
+            redirect back
           end
 
           user.confirm_email!
           env['warden'].set_user(user)
-          flash[:notice] = Messages[:reset_success]
+          notify :notice, :reset_success
           redirect '/home'
         end
       end
