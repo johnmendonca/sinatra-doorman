@@ -78,8 +78,8 @@ module Sinatra
             redirect back
           end
 
-          notify :notice, :signup_success
-          notify :notice, 'Signed up: ' + user.confirm_token
+          notify :success, :signup_success
+          notify :success, 'Signed up: ' + user.confirm_token
           Pony.mail(
             :to => user.email, 
             :from => "no-reply@#{env['SERVER_NAME']}", 
@@ -100,7 +100,7 @@ module Sinatra
             notify :error, :confirm_no_user
           else
             user.confirm_email!
-            notify :notice, :confirm_success
+            notify :success, :confirm_success
           end
           redirect '/login'
         end
@@ -119,7 +119,7 @@ module Sinatra
 
         app.get '/logout/?' do
           env['warden'].logout(:default)
-          notify :notice, :logout_success
+          notify :success, :logout_success
           redirect '/login'
         end
       end
@@ -210,7 +210,7 @@ module Sinatra
             :to => user.email, 
             :from => "no-reply@#{env['SERVER_NAME']}", 
             :body => token_link('reset', user))
-          notify :notice, :forgot_success
+          notify :success, :forgot_success
           redirect '/login'
         end
 
@@ -252,7 +252,7 @@ module Sinatra
 
           user.confirm_email!
           env['warden'].set_user(user)
-          notify :notice, :reset_success
+          notify :success, :reset_success
           redirect '/home'
         end
       end

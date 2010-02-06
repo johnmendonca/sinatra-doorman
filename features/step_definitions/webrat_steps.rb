@@ -55,7 +55,7 @@ Then /^I should see an error notice$/ do
 end
 
 Then /^I should see a success notice$/ do
-  last_response.should have_selector 'div#flash-notice'
+  last_response.should have_selector 'div#flash-success'
 end
 
 Given /^I signed up with:$/ do |table|
