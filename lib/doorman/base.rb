@@ -7,7 +7,7 @@ module Sinatra
     end
 
     ##
-    # Core Features:
+    # Base Features:
     #   * Signup with Email Confirmation
     #   * Login/Logout
     ##
@@ -34,7 +34,7 @@ module Sinatra
       end
     end
 
-    module Core
+    module Base
       module Helpers
         def authenticated?
           env['warden'].authenticated?
