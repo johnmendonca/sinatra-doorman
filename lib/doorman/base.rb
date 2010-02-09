@@ -43,7 +43,7 @@ module Sinatra
 
         def notify(type, message)
           message = Messages[message] if message.is_a?(Symbol)
-          flash[type] = message
+          flash[type] = message if defined?(Rack::Flash)
         end
 
         def token_link(type, user)
@@ -56,7 +56,7 @@ module Sinatra
 
         app.use Warden::Manager do |manager|
           manager.failure_app = lambda { |env|
-            env['x-rack.flash'][:error] = Messages[:authentication_required]
+            env['x-rack.flash'][:error] = Messages[:auth_required] if defined?(Rack::Flash)
             [302, { 'Location' => '/login' }, ['']] 
           }
         end

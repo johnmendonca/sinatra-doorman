@@ -4,7 +4,7 @@ A user authentication extension for Sinatra based on Warden.
 
 == Features
 
-Core
+Base
 * Signup w/ email confirmation
 * Login/Logout
 
@@ -14,12 +14,13 @@ Optional
 
 == Usage
 
+    require 'warden'
     require 'doorman'
 
-    #Sessions are required
     use Rack::Session::Cookie
 
     #Optional, if you want user notices
+    require 'rack/flash'
     use Rack::Flash
 
 To use as a middleware
@@ -28,7 +29,7 @@ To use as a middleware
 
 To use as a Sinatra extension, call register on the features you want
 
-    register Sinatra::Doorman::Core
+    register Sinatra::Doorman::Base
     register Sinatra::Doorman::RememberMe
     register Sinatra::Doorman::ForgotPassword
 
@@ -37,3 +38,4 @@ style Sinatra apps, because the extension file would call it for you.
 This is not the case in this project, because the extension files are loaded
 also when the middleware is used, and we do not want routes declared on the
 top-level ('classic' style) when we are using the middleware.
+Also, you will need to call `Sinatra.register` if using classic top-level style apps.

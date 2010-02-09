@@ -1,6 +1,7 @@
 module Sinatra
   module Doorman
     Messages = {
+      :auth_required => 'You must be logged in to view this page.',
       :signup_success => 'You have signed up successfully. A confirmation ' +
         'email has been sent to you.',
       :confirm_no_token => 'Invalid confirmation URL.  Please make sure you ' +

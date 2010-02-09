@@ -1,7 +1,7 @@
 require 'rubygems'
 require 'sinatra'
 require 'haml'
-require 'warden'
+require 'rack/flash'
 
 require 'lib/doorman'
 
@@ -21,10 +21,7 @@ end
 
 use Rack::Session::Cookie
 use Rack::Flash
-
-Sinatra.register Sinatra::Doorman::Base
-Sinatra.register Sinatra::Doorman::RememberMe
-Sinatra.register Sinatra::Doorman::ForgotPassword
+use Sinatra::Doorman::Middleware
 
 get '/' do
   haml :root
