@@ -40,11 +40,13 @@ describe 'A new user object' do
       @user.errors[:username].should_not be_nil
     end
 
-    it 'should invalidate with unallowed username' do
-      @user.username = "contact"
-      @user.should_not be_valid
-      @user.errors[:username].should_not be_nil
-    end
+    #not sure if this is in the scope of this project
+    #
+    #it 'should invalidate with unallowed username' do
+    #  @user.username = "contact"
+    #  @user.should_not be_valid
+    #  @user.errors[:username].should_not be_nil
+    #end
 
     it 'should invalidate with unallowed characters in the username' do
       @user.username = "foo@example.com"

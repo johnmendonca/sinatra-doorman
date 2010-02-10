@@ -1,3 +1,5 @@
 development.db
 webrat.log
 coverage
+pkg
+rdoc
