@@ -1,0 +1,7 @@
+%form{:action => "/reset", :id => "reset", :method => "POST"}
+  %label{:for => "user[password]"} Password
+  %input{:id => "user[password]", :name => "user[password]", :type => "text"}
+  %label{:for => "user[password_confirmation]"} Confirm Password
+  %input{:id => "user[password_confirmation]", :name => "user[password_confirmation]", :type => "text"}
+  %input{:id => "user[confirm_token]", :name => "user[confirm_token]", :type => "hidden", :value => confirm_token}
+  %input{:id => "reset", :name => "reset", :type => "submit", :value => "Reset Password"}

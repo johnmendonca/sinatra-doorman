@@ -1,6 +1,6 @@
 ENV['RACK_ENV'] = 'test'
 
-require File.join(File.dirname(__FILE__), %w{ .. application })
+require File.join(File.dirname(__FILE__), %w{ .. examples application })
 
 require 'spec'
 require 'spec/expectations'

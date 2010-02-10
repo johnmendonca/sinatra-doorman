@@ -1,0 +1,18 @@
+!!!
+%html
+  %head
+    %title Title
+    %link{:href => '/main.css', :rel => 'stylesheet', :type => 'text/css'}
+  %body
+    #container
+      #header
+        #logo
+          %h1
+            %a{:href => '/'} Title
+      - if flash.has? :error
+        #flash-error= flash[:error]
+      - if flash.has? :success
+        #flash-success= flash[:success]
+      #content= yield
+      #footer
+        %p#legal= "&mdash; &copy; #{Time.now.strftime('%Y')} &mdash;"

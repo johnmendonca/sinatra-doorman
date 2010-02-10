@@ -28,7 +28,6 @@ Feature: Sign up
 			| guy      | example.com      | aWeSoMeG | aWeSoMeG              |
 			| john     | guy@example.com  | aWeSoMeG | aWeSoMeG              |
 			| guy      | john@example.com | aWeSoMeG | aWeSoMeG              |
-			| contact  | guy@example.com  | aWeSoMeG | aWeSoMeG              |
 			| guy      | guy@example.com  | aWeSoMeG | radicall              |
 			| guy@home | guy@example.com  | aWeSoMeG | aWeSoMeG              |
 

@@ -56,7 +56,6 @@ spec = Gem::Specification.new do |s|
 
   # If you want to depend on other gems, add them here, along with any
   # relevant versions
-  # s.add_dependency("some_other_gem", "~> 0.1.0")
   s.add_dependency("sinatra", "~> 1.0.a")
   s.add_dependency("warden", "~> 0.9.0")
   s.add_dependency("pony")
