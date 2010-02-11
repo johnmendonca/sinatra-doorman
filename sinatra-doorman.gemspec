@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.date = %q{2010-02-10}
   s.email = %q{joaosinho@gmail.com}
   s.extra_rdoc_files = ["README.rdoc"]
-  s.files = ["MIT-LICENSE", "Rakefile", "README.rdoc", "views/signup.haml", "views/reset.haml", "views/forgot.haml", "views/login.haml", "lib/rack", "lib/rack/contrib", "lib/rack/contrib/cookies.rb", "lib/doorman.rb", "lib/doorman", "lib/doorman/messages.rb", "lib/doorman/user.rb", "lib/doorman/base.rb", "lib/doorman/middleware.rb"]
+  s.files = ["MIT-LICENSE", "Rakefile", "README.rdoc", "views/signup.haml", "views/reset.haml", "views/forgot.haml", "views/login.haml", "lib/rack", "lib/rack/contrib", "lib/rack/contrib/cookies.rb", "lib/doorman.rb", "lib/doorman", "lib/doorman/messages.rb", "lib/doorman/user.rb", "lib/doorman/base.rb"]
   s.homepage = %q{http://github.com/johnmendonca/sinatra-doorman}
   s.rdoc_options = ["--main", "README.rdoc"]
   s.require_paths = ["lib"]

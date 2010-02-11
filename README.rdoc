@@ -20,7 +20,7 @@ in the future.
 
     gem install sinatra --pre
     gem install warden pony dm-core dm-validations dm-timestamps
-	gem install sinatra-doorman
+    gem install sinatra-doorman
 
 == Usage
 
@@ -77,4 +77,4 @@ tell, there is not actually any infinite redirect problem. I have not got
 to the bottom of this yet, so in the meantime I run cucumber in two bites:
 
     cucumber --tags @signup
-	cucumber --tags ~@signup
+    cucumber --tags ~@signup
