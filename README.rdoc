@@ -12,9 +12,18 @@ Optional
 * Remember Me
 * Forgotten password reset
 
+== Installation
+
+This project requires Sinatra 1.0 ({see #297}[https://sinatra.lighthouseapp.com/projects/9779/tickets/297-sinatra-extension-routes-are-not-available-in-app]).
+Currently the user model requires DataMapper, this dependency may be removed
+in the future.
+
+    gem install sinatra --pre
+    gem install warden pony dm-core dm-validations dm-timestamps
+	gem install sinatra-doorman
+
 == Usage
 
-    require 'warden'
     require 'doorman'
 
     use Rack::Session::Cookie
@@ -29,13 +38,43 @@ To use as a middleware
 
 To use as a Sinatra extension, call register on the features you want
 
+    #call Sinatra.register if you are writing a top-level app
     register Sinatra::Doorman::Base
     register Sinatra::Doorman::RememberMe
     register Sinatra::Doorman::ForgotPassword
 
 Note: usually you don't need to call register explicitly when extending 'classic'
-style Sinatra apps, because the extension file would call it for you.
-This is not the case in this project, because the extension files are loaded
-also when the middleware is used, and we do not want routes declared on the
-top-level ('classic' style) when we are using the middleware.
-Also, you will need to call `Sinatra.register` if using classic top-level style apps.
+top-level Sinatra apps, because the extension author will call it for you.
+This is not the case in this project, because I wanted to keep some components
+optional, and I did not want to alter the top-level namespace of any Sinatra 
+apps using this as middleware.
+
+== Views
+
+At this time, you need to copy the contents of the views folder in this project
+to the views folder of your Sinatra application.
+
+It is my objective to make this middleware useful for any Rack based application.
+One approach that I have been considering is requesting an empty layout from 
+the downstream app, and transforming it using {Effigy}[http://github.com/jferris/effigy].
+
+Ideally I would like:
+* Reasonable default views without copying files from GH or gem
+* User option to replace/customize default views
+* Rendering within the application layout
+
+I can not think of any middleware that adds to or significantly alters an app's
+response body.  Perhaps this is not an appropriate thing to be doing, but it makes
+sense to me on some level.  Ultimately, I would like this code to be something that
+one could plug into their middleware stack and use without too much trouble.
+
+== Development and Testing
+
+If you want to work on this project, there is one thing to note.
+When I run all the cucumber features at once, I get some kind of issue with Webrat
+where Infinite Redirect errors are raised on the signup feature.  From what I can
+tell, there is not actually any infinite redirect problem. I have not got
+to the bottom of this yet, so in the meantime I run cucumber in two bites:
+
+    cucumber --tags @signup
+	cucumber --tags ~@signup
