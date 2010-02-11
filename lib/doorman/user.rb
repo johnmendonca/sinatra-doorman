@@ -1,3 +1,7 @@
+require 'dm-core'
+require 'dm-validations'
+require 'dm-timestamps'
+
 module Sinatra
   module Doorman
     class User

@@ -1,14 +1,7 @@
-require 'dm-core'
-require 'dm-validations'
-require 'dm-timestamps'
+lib = File.dirname(__FILE__)
+$:.unshift(lib) unless $:.include?(lib)
 
-require 'warden' unless defined? ::Warden
-require 'pony' unless defined? ::Pony
-
-lib = File.expand_path(File.dirname(__FILE__))
-
-require File.join(lib, 'rack/contrib/cookies')
-require File.join(lib, 'doorman/messages')
-require File.join(lib, 'doorman/user')
-require File.join(lib, 'doorman/base')
-require File.join(lib, 'doorman/middleware')
+require 'rack/contrib/cookies'
+require 'doorman/messages'
+require 'doorman/user'
+require 'doorman/base'

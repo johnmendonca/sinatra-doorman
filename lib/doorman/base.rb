@@ -1,3 +1,7 @@
+require 'sinatra/base'
+require 'warden'
+require 'pony'
+
 module Sinatra
   module Doorman
 
@@ -256,6 +260,12 @@ module Sinatra
           redirect '/home'
         end
       end
+    end
+
+    class Middleware < Sinatra::Base
+      register Base
+      register RememberMe
+      register ForgotPassword
     end
   end
 end
